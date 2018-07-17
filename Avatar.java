@@ -19,12 +19,11 @@ public class Avatar {
 	public void draw (Graphics g) {
 		g.drawImage(sprites[2][0], 0, 0, null); //forward position
 		
-		for (int i = 0; i < 4; i++) { //testing animate method		
-			animate(g,i,i*100,100);
-		}
+		//for (int i = 0; i < 4; i++) { //testing animate method		
+			//animate(g,i,i*100,100);
+		//} //it is flashy
 		
 	}  
-	
 	public void animate(Graphics g, int direction, int x, int y) {
 		int currPic = 0;
 		

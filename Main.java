@@ -37,7 +37,7 @@ public class Main extends JFrame implements ActionListener{
 		super("Debate Simulator");
 		setSize(Toolkit.getDefaultToolkit().getScreenSize()); //set the size of the screen = to the monitor size
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		
+			
 		cards = new JPanel(cLayout);
 		cards.add(menu,"menu");
 		cards.add(start,"start");
@@ -98,6 +98,9 @@ public class Main extends JFrame implements ActionListener{
 			//go to addMember screen
 			else if (members.get_addMember()) {
 				cLayout.show(cards, "addMember");
+				
+				addMember.actionPerformed(e);
+				
 				if (addMember.getBack()) {
 					members.set_addMember(false);
 					addMember.setBack(false);
@@ -362,7 +365,7 @@ class MembersPanel extends JPanel implements MouseListener{
 	}
 }
 
-class AddMemberPanel extends JPanel implements MouseListener{
+class AddMemberPanel extends JPanel implements MouseListener,ActionListener{
 	
 	private JButton[] buttons = {new JButton("Confirm"), new JButton("Back")};
 	private boolean confirm,back;
@@ -377,7 +380,7 @@ class AddMemberPanel extends JPanel implements MouseListener{
 	private Image[][][][] sprites = new Image[2][5][4][10];  
 	
 	public AddMemberPanel() {
-		
+				
 		//Member making buttons
 		for (JButton b : gender_buttons) {
 			b.addMouseListener(this);
@@ -444,7 +447,7 @@ class AddMemberPanel extends JPanel implements MouseListener{
 		newAvatar.draw(g);
 	}
 	
-	
+
 	@Override
 	public void mouseClicked(MouseEvent e) {
 		Object source = e.getSource();
@@ -486,6 +489,11 @@ class AddMemberPanel extends JPanel implements MouseListener{
 	}
 	@Override
 	public void mouseReleased(MouseEvent arg0) {	
+	}
+	
+	@Override
+	public void actionPerformed(ActionEvent e) {
+		
 	}
 	
 }
