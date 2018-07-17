@@ -364,22 +364,34 @@ class AddMemberPanel extends JPanel implements MouseListener{
 	private boolean confirm,back;
 	
 	private Avatar newAvatar; //change to member after - temporary to test physical appearance things
+	private String gender,skin;
+	private JButton[] gender_buttons = {new JButton("Male"),new JButton("Female")};
+	//								light			tanned			tanned2			dark		dark2
+	private JButton[] skin_buttons = {new JButton(), new JButton(), new JButton(), new JButton(), new JButton()};
+	private String[] skins = {"light","tanned","tanned2","dark","dark2"}; //related list for skin buttons
 	
 	public AddMemberPanel() {
 		
-		//display default avatar
-		try {
-			newAvatar = new Avatar("male","light");
-		} catch (IOException e) {e.printStackTrace();}
-		
+		//display default member 
+		gender = "male";
+		skin = "light";
+
+		newAvatar = new Avatar(gender,skin); //default start
+		//Member making buttons
+		for (JButton b : gender_buttons) {
+			b.addMouseListener(this);
+			add(b);
+		}
+		for (JButton b : skin_buttons) {
+			b.addMouseListener(this);
+			add(b);
+		}
 		
 		//button formatting
 		for (JButton b : buttons) {
 			b.addMouseListener(this);
 			add(b);
-		}
-		
-		
+		}	
 	}
 	
 	//getters
@@ -401,12 +413,32 @@ class AddMemberPanel extends JPanel implements MouseListener{
 	@Override
 	public void mouseClicked(MouseEvent e) {
 		Object source = e.getSource();
+		//for page navigation
 		if (source == buttons[0]) {
 			confirm = true;
 		}
 		else if (source == buttons[1]) {
 			back = true;
 		}
+		
+		//for Member creation
+		//gender
+		if (source == gender_buttons[0]) { //male
+			gender = "male";
+			newAvatar = new Avatar(gender,skin);
+		}
+		else if (source == gender_buttons[1]) { //female
+			gender = "female";
+			newAvatar = new Avatar(gender,skin);
+		}
+		//skin
+		for (int i = 0; i < skin_buttons.length; i++) {
+			if (source == skin_buttons[i]) {
+				skin = skins[i];
+				newAvatar = new Avatar(gender,skin);
+			}
+		}
+		
 	}
 	@Override
 	public void mouseEntered(MouseEvent arg0) {
