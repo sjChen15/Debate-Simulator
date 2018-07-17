@@ -14,7 +14,11 @@ public class Avatar {
 		this.gender = gender;
 		this.skin_colour = skin_colour;
 	
-		avatar = ImageIO.read(new File("Avatar/body/"+gender+"/"+skin_colour+"/"+skin_colour+"19.png"));
+
+		if (skin_colour.charAt(skin_colour.length()-1) == '2') //because i am bad at naming files we have to take this extra step
+			avatar = ImageIO.read(new File("Avatar/body/"+gender+"/"+skin_colour+"/"+skin_colour+"_19.png"));
+		else
+			avatar = ImageIO.read(new File("Avatar/body/"+gender+"/"+skin_colour+"/"+skin_colour+"19.png"));
 	
 	}
 	
