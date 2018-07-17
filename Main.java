@@ -2,14 +2,17 @@ import java.awt.CardLayout;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics;
+import java.awt.Image;
 import java.awt.Point;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
+import java.io.File;
 import java.io.IOException;
 
+import javax.imageio.ImageIO;
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JFrame;
@@ -365,19 +368,16 @@ class AddMemberPanel extends JPanel implements MouseListener{
 	private boolean confirm,back;
 	
 	private Avatar newAvatar; //change to member after - temporary to test physical appearance things
-	private String gender,skin;
 	private JButton[] gender_buttons = {new JButton("Male"),new JButton("Female")};
-	//								light			tanned			tanned2			dark		dark2
 	private JButton[] skin_buttons = {new JButton(), new JButton(), new JButton(), new JButton(), new JButton()};
 	private String[] skins = {"light","tanned","tanned2","dark","dark2"}; //related list for skin buttons
+	private int skin_int = 0; //keep track of current skin
+	private int gender_int = 0; //keep track of current gender
+	//gender (male,female) x skin colors (light,tanned,tanned2,dark,dark2) x direction(up,down,right,left) x number of pictures
+	private Image[][][][] sprites = new Image[2][5][4][10];  
 	
 	public AddMemberPanel() {
 		
-		//display default member 
-		gender = "male";
-		skin = "light";
-
-		newAvatar = new Avatar(gender,skin); //default start
 		//Member making buttons
 		for (JButton b : gender_buttons) {
 			b.addMouseListener(this);
@@ -400,6 +400,33 @@ class AddMemberPanel extends JPanel implements MouseListener{
 			b.addMouseListener(this);
 			add(b);
 		}	
+		
+		//load all sprite images
+		String g,s; // temporary variables gender, skin color
+		for (int i = 0; i < 2; i++) { //gender loop
+			for (int j = 0; j < 5; j++) { //skin color loop
+				for (int k = 0; k < 4; k++) { //direction loop
+					for (int l = 0; l < 9; l++) { //image
+						
+						if (i == 0) 
+							g = "male";
+						else
+							g = "female";
+						
+						s = skins[j]; //use existing list
+												
+						try {
+							if (s.charAt(s.length()-1) == '2') 
+								sprites[i][j][k][l] = ImageIO.read(new File("Avatar/body/"+g+"/"+s+"/"+s+"_"+((l+1)+(k*9))+".png"));
+							else
+								sprites[i][j][k][l] = ImageIO.read(new File("Avatar/body/"+g+"/"+s+"/"+s+((l+1)+(k*9))+".png"));
+						} catch (IOException e) {e.printStackTrace();}
+					}
+				}	
+			}
+		}
+							//male and light skin
+		newAvatar = new Avatar(sprites[gender_int][skin_int]); //default start
 	}
 	
 	//getters
@@ -432,18 +459,18 @@ class AddMemberPanel extends JPanel implements MouseListener{
 		//for Member creation
 		//gender
 		if (source == gender_buttons[0]) { //male
-			gender = "male";
-			newAvatar = new Avatar(gender,skin);
+			gender_int = 0;
+			newAvatar = new Avatar(sprites[gender_int][skin_int]);
 		}
 		else if (source == gender_buttons[1]) { //female
-			gender = "female";
-			newAvatar = new Avatar(gender,skin);
+			gender_int = 1;
+			newAvatar = new Avatar(sprites[gender_int][skin_int]);
 		}
 		//skin
 		for (int i = 0; i < skin_buttons.length; i++) {
 			if (source == skin_buttons[i]) {
-				skin = skins[i];
-				newAvatar = new Avatar(gender,skin);
+				skin_int = i;
+				newAvatar = new Avatar(sprites[gender_int][skin_int]);
 			}
 		}
 		

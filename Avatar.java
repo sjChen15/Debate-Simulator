@@ -7,24 +7,40 @@ import javax.imageio.ImageIO;
 
 //to be combined with the member class in the future
 public class Avatar {
-	private String gender,skin_colour;
-	private Image avatar;
+	private Image[][] sprites; //up,down,right,left x 10 (4x10)
+	private int animate = 0;
 	
-	public Avatar(String gender, String skin_colour) throws IOException{
-		this.gender = gender;
-		this.skin_colour = skin_colour;
-	
-
-		if (skin_colour.charAt(skin_colour.length()-1) == '2') //because i am bad at naming files we have to take this extra step
-			avatar = ImageIO.read(new File("Avatar/body/"+gender+"/"+skin_colour+"/"+skin_colour+"_19.png"));
-		else
-			avatar = ImageIO.read(new File("Avatar/body/"+gender+"/"+skin_colour+"/"+skin_colour+"19.png"));
-	
+	public Avatar(Image[][] sprites){
+		this.sprites = sprites;
 	}
 	
+	
+	//graphics
 	public void draw (Graphics g) {
-		g.drawImage(avatar, 0, 0, null);
+		g.drawImage(sprites[2][0], 0, 0, null); //forward position
+		
+		for (int i = 0; i < 4; i++) { //testing animate method		
+			animate(g,i,i*100,100);
+		}
+		
+	}  
+	
+	public void animate(Graphics g, int direction, int x, int y) {
+		int currPic = 0;
+		
+		if (animate == 29)  {
+			animate = 0; //reset counter when it reaches the max
+		}
+		
+		if (animate%3 == 0) {
+			currPic = animate/3;
+			g.drawImage(sprites[direction][currPic], x, y, null);
+		}
+		
+		g.drawImage(sprites[direction][currPic], x, y, null);
+		animate++;
 	}
+	
 	
 	
 }
