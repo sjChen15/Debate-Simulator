@@ -1,11 +1,14 @@
 import java.awt.CardLayout;
 import java.awt.Dimension;
+import java.awt.Graphics;
 import java.awt.Point;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
+import java.io.IOException;
+
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JFrame;
@@ -360,12 +363,23 @@ class AddMemberPanel extends JPanel implements MouseListener{
 	private JButton[] buttons = {new JButton("Confirm"), new JButton("Back")};
 	private boolean confirm,back;
 	
+	private Avatar newAvatar; //change to member after - temporary to test physical appearance things
+	
 	public AddMemberPanel() {
 		
+		//display default avatar
+		try {
+			newAvatar = new Avatar("male","light");
+		} catch (IOException e) {e.printStackTrace();}
+		
+		
+		//button formatting
 		for (JButton b : buttons) {
 			b.addMouseListener(this);
 			add(b);
 		}
+		
+		
 	}
 	
 	//getters
@@ -375,6 +389,14 @@ class AddMemberPanel extends JPanel implements MouseListener{
 	//setters
 	public void setConfirm(boolean b) {confirm = b;}
 	public void setBack(boolean b) {back = b;}
+	
+	//graphics
+	public void paintComponent(Graphics g) {
+		super.paintComponent(g);
+		
+		newAvatar.draw(g);
+	}
+	
 	
 	@Override
 	public void mouseClicked(MouseEvent e) {
@@ -398,4 +420,5 @@ class AddMemberPanel extends JPanel implements MouseListener{
 	@Override
 	public void mouseReleased(MouseEvent arg0) {	
 	}
+	
 }
