@@ -1,4 +1,5 @@
 import java.awt.CardLayout;
+import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Point;
@@ -382,6 +383,13 @@ class AddMemberPanel extends JPanel implements MouseListener{
 			b.addMouseListener(this);
 			add(b);
 		}
+		//skin buttons
+		skin_buttons[0].setBackground(new Color(253,213,183));
+		skin_buttons[1].setBackground(new Color(253,208,130));
+		skin_buttons[2].setBackground(new Color(236,196,121));
+		skin_buttons[3].setBackground(new Color(186,132,84));
+		skin_buttons[4].setBackground(new Color(156,102,62));
+		
 		for (JButton b : skin_buttons) {
 			b.addMouseListener(this);
 			add(b);
