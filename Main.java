@@ -13,11 +13,7 @@ import java.io.File;
 import java.io.IOException;
 
 import javax.imageio.ImageIO;
-import javax.swing.BoxLayout;
-import javax.swing.JButton;
-import javax.swing.JFrame;
-import javax.swing.JPanel;
-import javax.swing.Timer;
+import javax.swing.*;
 
 public class Main extends JFrame implements ActionListener{
 	
@@ -98,7 +94,7 @@ public class Main extends JFrame implements ActionListener{
 			//go to addMember screen
 			else if (members.get_addMember()) {
 				cLayout.show(cards, "addMember");
-				
+
 				addMember.actionPerformed(e);
 				
 				if (addMember.getBack()) {
@@ -377,7 +373,9 @@ class AddMemberPanel extends JPanel implements MouseListener,ActionListener{
 	private int skin_int = 0; //keep track of current skin
 	private int gender_int = 0; //keep track of current gender
 	//gender (male,female) x skin colors (light,tanned,tanned2,dark,dark2) x direction(up,down,right,left) x number of pictures
-	private Image[][][][] sprites = new Image[2][5][4][10];  
+	private Image[][][][] sprites = new Image[2][5][4][10];
+
+	private JTextField name = new JTextField(); //textbox
 	
 	public AddMemberPanel() {
 				
@@ -430,6 +428,11 @@ class AddMemberPanel extends JPanel implements MouseListener,ActionListener{
 		}
 							//male and light skin
 		newAvatar = new Avatar(sprites[gender_int][skin_int]); //default start
+
+		//text info stuff
+		name.setPreferredSize(new Dimension(150,40));
+		add(name);
+
 	}
 	
 	//getters
@@ -493,7 +496,8 @@ class AddMemberPanel extends JPanel implements MouseListener,ActionListener{
 	
 	@Override
 	public void actionPerformed(ActionEvent e) {
-		
+
 	}
+
 	
 }
