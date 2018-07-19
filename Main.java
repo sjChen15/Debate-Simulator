@@ -7,6 +7,8 @@ import java.awt.Point;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.io.File;
@@ -15,11 +17,16 @@ import java.io.IOException;
 import javax.imageio.ImageIO;
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
+import javax.swing.JComponent;
 import javax.swing.JFrame;
+import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JTextField;
 import javax.swing.Timer;
 
 public class Main extends JFrame implements ActionListener{
+	
+	private JComponent thing;
 	
 	private Timer myTimer;
 	private JPanel cards;
@@ -37,7 +44,7 @@ public class Main extends JFrame implements ActionListener{
 		super("Debate Simulator");
 		setSize(Toolkit.getDefaultToolkit().getScreenSize()); //set the size of the screen = to the monitor size
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-			
+		
 		cards = new JPanel(cLayout);
 		cards.add(menu,"menu");
 		cards.add(start,"start");
@@ -48,6 +55,7 @@ public class Main extends JFrame implements ActionListener{
 		cards.add(debates,"debates");
 		getContentPane().add(cards);
 	
+		
 		setVisible(true);
 
 		myTimer = new Timer(100,this);
@@ -56,6 +64,7 @@ public class Main extends JFrame implements ActionListener{
 	
 	@Override
 	public void actionPerformed(ActionEvent e) {
+		
 		if (menu.getStart()) {
 			cLayout.show(cards, "start");
 			//going back to menu
@@ -89,6 +98,7 @@ public class Main extends JFrame implements ActionListener{
 		}
 		else if (menu.getMembers()) {
 			cLayout.show(cards, "members");
+			
 			//go back to menu
 			if (members.getMenu()) {
 				menu.setMembers(false); //reset flags
@@ -97,10 +107,7 @@ public class Main extends JFrame implements ActionListener{
 			}
 			//go to addMember screen
 			else if (members.get_addMember()) {
-				cLayout.show(cards, "addMember");
-				
-				addMember.actionPerformed(e);
-				
+				cLayout.show(cards, "addMember");				
 				if (addMember.getBack()) {
 					members.set_addMember(false);
 					addMember.setBack(false);
@@ -217,11 +224,12 @@ class StartPanel extends JPanel implements MouseListener{
 
 class AddBallotPanel extends JPanel implements MouseListener{
 	
-	private JButton[] buttons = {new JButton("Confirm"), new JButton("Back")};
+	private JButton[] buttons = {new JButton("Add Judge"), new JButton("Confirm"), new JButton("Back")};
 	private boolean confirm,back;
-	
-	public AddBallotPanel() {
 		
+	public AddBallotPanel() {
+	
+		//buttons
 		for (JButton b : buttons) {
 			b.addMouseListener(this);
 			add(b);
@@ -258,6 +266,7 @@ class AddBallotPanel extends JPanel implements MouseListener{
 	@Override
 	public void mouseReleased(MouseEvent arg0) {	
 	}
+
 }
 
 class ShakeTinPanel extends JPanel implements MouseListener {
@@ -365,11 +374,11 @@ class MembersPanel extends JPanel implements MouseListener{
 	}
 }
 
-class AddMemberPanel extends JPanel implements MouseListener,ActionListener{
-	
+class AddMemberPanel extends JPanel implements MouseListener{
+		
 	private JButton[] buttons = {new JButton("Confirm"), new JButton("Back")};
 	private boolean confirm,back;
-	
+
 	private Avatar newAvatar; //change to member after - temporary to test physical appearance things
 	private JButton[] gender_buttons = {new JButton("Male"),new JButton("Female")};
 	private JButton[] skin_buttons = {new JButton(), new JButton(), new JButton(), new JButton(), new JButton()};
@@ -378,9 +387,16 @@ class AddMemberPanel extends JPanel implements MouseListener,ActionListener{
 	private int gender_int = 0; //keep track of current gender
 	//gender (male,female) x skin colors (light,tanned,tanned2,dark,dark2) x direction(up,down,right,left) x number of pictures
 	private Image[][][][] sprites = new Image[2][5][4][10];  
+		
+	private JTextField name;
+	private boolean label_clicked;
 	
 	public AddMemberPanel() {
-				
+		
+		name = new JTextField(20);
+		name.addMouseListener(this);
+		add(name);
+		
 		//Member making buttons
 		for (JButton b : gender_buttons) {
 			b.addMouseListener(this);
@@ -430,8 +446,9 @@ class AddMemberPanel extends JPanel implements MouseListener,ActionListener{
 		}
 							//male and light skin
 		newAvatar = new Avatar(sprites[gender_int][skin_int]); //default start
+		
 	}
-	
+
 	//getters
 	public boolean getConfirm() {return confirm;}
 	public boolean getBack() {return back;}
@@ -441,16 +458,25 @@ class AddMemberPanel extends JPanel implements MouseListener,ActionListener{
 	public void setBack(boolean b) {back = b;}
 	
 	//graphics
+	@Override
 	public void paintComponent(Graphics g) {
 		super.paintComponent(g);
-		
 		newAvatar.draw(g);
+		
+		if (label_clicked) {
+			name.requestFocus();
+		}
 	}
 	
 
 	@Override
-	public void mouseClicked(MouseEvent e) {
+	public void mouseClicked(MouseEvent e) {		
 		Object source = e.getSource();
+		
+		if (source == name) {
+			label_clicked = true;
+		}
+		
 		//for page navigation
 		if (source == buttons[0]) {
 			confirm = true;
@@ -479,10 +505,14 @@ class AddMemberPanel extends JPanel implements MouseListener,ActionListener{
 		
 	}
 	@Override
-	public void mouseEntered(MouseEvent arg0) {
+	public void mouseEntered(MouseEvent e) {
 	}
 	@Override
-	public void mouseExited(MouseEvent arg0) {		
+	public void mouseExited(MouseEvent e) {
+		Object source = e.getSource();
+		if (source == name) {
+			label_clicked = false;
+		}
 	}
 	@Override
 	public void mousePressed(MouseEvent arg0) {
@@ -490,10 +520,5 @@ class AddMemberPanel extends JPanel implements MouseListener,ActionListener{
 	@Override
 	public void mouseReleased(MouseEvent arg0) {	
 	}
-	
-	@Override
-	public void actionPerformed(ActionEvent e) {
-		
-	}
-	
+
 }
