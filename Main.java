@@ -17,6 +17,7 @@ import java.io.IOException;
 import javax.imageio.ImageIO;
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
+import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
@@ -130,10 +131,19 @@ public class Main extends JFrame implements ActionListener{
 
 class MenuPanel extends JPanel implements MouseListener{
 	
+	private JLabel[] labels = {new JLabel("Massey Debate"),new JLabel("Simulator")};
 	private JButton[] buttons = {new JButton("Start"),new JButton("Members")};
+
 	private boolean start, members;
 	
 	public MenuPanel() {
+		//labels
+		for (JLabel l : labels) {
+			add(l);
+		}
+		
+		
+		//buttons
 		for (JButton b : buttons) {
 			b.addMouseListener(this);
 			add(b);
@@ -226,9 +236,18 @@ class AddBallotPanel extends JPanel implements MouseListener{
 	
 	private JButton[] buttons = {new JButton("Add Judge"), new JButton("Confirm"), new JButton("Back")};
 	private boolean confirm,back;
-		
+	
+	private JComboBox enter_name;
+	private String[] sample_names = {"Rahma","Jenny","Adam","Vinh","Albert","Zak","Poonam","Georgia"}; //replace with list of member names
+	
 	public AddBallotPanel() {
 	
+		//JComboBox to enter names
+		enter_name = new JComboBox(sample_names);
+		enter_name.setEditable(true);
+		enter_name.addMouseListener(this);
+		add(enter_name);
+		
 		//buttons
 		for (JButton b : buttons) {
 			b.addMouseListener(this);
@@ -244,9 +263,22 @@ class AddBallotPanel extends JPanel implements MouseListener{
 	public void setConfirm(boolean b) {confirm = b;}
 	public void setBack(boolean b) {back = b;}
 	
+	//graphics
+	@Override
+	public void paintComponent(Graphics g) {
+		super.paintComponent(g);
+		
+	
+		//enter_name.requestFocus();
+	
+	}
+	
+	
 	@Override
 	public void mouseClicked(MouseEvent e) {
 		Object source = e.getSource();
+
+		//buttons
 		if (source == buttons[0]) {
 			confirm = true;
 		}
@@ -255,10 +287,12 @@ class AddBallotPanel extends JPanel implements MouseListener{
 		}
 	}
 	@Override
-	public void mouseEntered(MouseEvent arg0) {
+	public void mouseEntered(MouseEvent e) {		
+
 	}
 	@Override
-	public void mouseExited(MouseEvent arg0) {		
+	public void mouseExited(MouseEvent e) {
+
 	}
 	@Override
 	public void mousePressed(MouseEvent arg0) {
