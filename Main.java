@@ -34,10 +34,6 @@ public class Main extends JFrame implements ActionListener{
 	private JPanel cards;
 	private CardLayout cLayout = new CardLayout();
 	
-	//JPanels
-	private JPanel[] panels = {new MenuPanel(),new StartPanel(), new MembersPanel(), new AddBallotPanel(), new AddMemberPanel(),
-			new ShakeTinPanel(), new DebatesPanel()};
-	
 	//JButtons
 	private JButton[][] buttons = {{new JButton("Start"),new JButton("Members")},{new JButton("Add Ballot"), new JButton("Shake Tin"), new JButton("Menu")},
 			{new JButton("Add Member"),new JButton("Menu")},{new JButton("Confirm"), new JButton("Back")},
@@ -45,6 +41,10 @@ public class Main extends JFrame implements ActionListener{
 			{new JButton("Menu")}};
 	private String[] panelKey = {"menu","start","members","addBallot","addMember","shakeTin","debates"};
 	
+	//JPanels
+	private JPanel[] panels = {new MenuPanel(buttons[0]),new StartPanel(buttons[1]), new MembersPanel(buttons[2]), new AddBallotPanel(buttons[3]), new AddMemberPanel(buttons[4]),
+				new ShakeTinPanel(buttons[5]), new DebatesPanel(buttons[6])};	
+
 	public Main() {
 		super("Debate Simulator");
 		setSize(Toolkit.getDefaultToolkit().getScreenSize()); //set the size of the screen = to the monitor size
@@ -54,7 +54,7 @@ public class Main extends JFrame implements ActionListener{
 		for (int i = 0; i < buttons.length; i++) {
 			for (int j = 0; j < buttons[i].length; j++) {
 				buttons[i][j].addActionListener(this);
-				panels[i].add(buttons[i][j]);
+				//panels[i].add(buttons[i][j]);
 			}
 		}
 		
@@ -134,12 +134,19 @@ public class Main extends JFrame implements ActionListener{
 class MenuPanel extends JPanel implements MouseListener{
 	
 	private JLabel[] labels = {new JLabel("Massey Debate"),new JLabel("Simulator")};
+	private JButton[] buttons;
 	
-	public MenuPanel() {
-		//labels
+	public MenuPanel(JButton[] buttons) {
+		//JLabels
 		for (JLabel l : labels) {
 			add(l);
 		}
+		//JButtons
+		this.buttons = buttons;
+		for (JButton b : buttons) {
+			add(b);
+		}
+
 	}
 	
 	//key listener methods
@@ -162,8 +169,17 @@ class MenuPanel extends JPanel implements MouseListener{
 }
 
 class StartPanel extends JPanel implements MouseListener{
-
-	public StartPanel() {
+	
+	private JButton[] buttons;
+		
+	public StartPanel(JButton[] buttons) {
+		
+		//buttons
+		this.buttons = buttons;
+		for (JButton b : buttons) {
+			add(b);
+		}
+		
 	}
 	
 	@Override
@@ -185,11 +201,18 @@ class StartPanel extends JPanel implements MouseListener{
 
 class AddBallotPanel extends JPanel implements MouseListener{
 	
+	private JButton[] buttons;
 	private JComboBox enter_name;
 	private String[] sample_names = {"Rahma","Jenny","Adam","Vinh","Albert","Zak","Poonam","Georgia"}; //replace with list of member names
 	
-	public AddBallotPanel() {
-	
+	public AddBallotPanel(JButton[] buttons) {
+		
+		//JButtons
+		this.buttons = buttons;
+		for (JButton b : buttons) {
+			add(b);
+		}
+		
 		//JComboBox to enter names
 		enter_name = new JComboBox(sample_names);
 		enter_name.setEditable(true);
@@ -216,7 +239,14 @@ class AddBallotPanel extends JPanel implements MouseListener{
 
 class ShakeTinPanel extends JPanel implements MouseListener {
 	
-	public ShakeTinPanel() {
+	private JButton[] buttons;
+	
+	public ShakeTinPanel(JButton[] buttons) {
+		//JButtons
+		this.buttons = buttons;
+		for (JButton b : buttons) {
+			add(b);
+		}
 	}
 
 	@Override
@@ -239,6 +269,16 @@ class ShakeTinPanel extends JPanel implements MouseListener {
 
 class DebatesPanel extends JPanel implements MouseListener {
 
+	private JButton[] buttons;
+	
+	public DebatesPanel(JButton[] buttons) {
+		//JButtons
+		this.buttons = buttons;
+		for (JButton b : buttons) {
+			add(b);
+		}
+	}
+	
 	@Override
 	public void mouseClicked(MouseEvent arg0) {
 	}
@@ -259,7 +299,14 @@ class DebatesPanel extends JPanel implements MouseListener {
 
 class MembersPanel extends JPanel implements MouseListener{
 	
-	public MembersPanel() {
+	private JButton[] buttons;
+	
+	public MembersPanel(JButton[] buttons) {
+		//JButtons
+		this.buttons = buttons;
+		for (JButton b : buttons) {
+			add(b);
+		}
 	}
 	
 	@Override
@@ -281,6 +328,8 @@ class MembersPanel extends JPanel implements MouseListener{
 
 class AddMemberPanel extends JPanel implements MouseListener{
 	
+	private JButton[] buttons;
+	
 	private Avatar newAvatar; //change to member after - temporary to test physical appearance things
 	private JButton[] gender_buttons = {new JButton("Male"),new JButton("Female")};
 	private JButton[] skin_buttons = {new JButton(), new JButton(), new JButton(), new JButton(), new JButton()};
@@ -292,8 +341,15 @@ class AddMemberPanel extends JPanel implements MouseListener{
 		
 	private JTextField name;
 	
-	public AddMemberPanel() {
+	public AddMemberPanel(JButton[] buttons) {
 		
+		//JButtons
+		this.buttons = buttons;
+		for (JButton b : buttons) {
+			add(b);
+		}
+		
+		//JTextField
 		name = new JTextField(20);
 		add(name);
 		
