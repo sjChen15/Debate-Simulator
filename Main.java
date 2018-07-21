@@ -7,6 +7,9 @@ import java.awt.Point;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.FocusEvent;
+import java.awt.event.FocusListener;
+import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.awt.event.MouseEvent;
@@ -26,37 +29,42 @@ import javax.swing.JTextField;
 import javax.swing.Timer;
 
 public class Main extends JFrame implements ActionListener{
-	
-	private JComponent thing;
-	
+		
 	private Timer myTimer;
 	private JPanel cards;
 	private CardLayout cLayout = new CardLayout();
 	
-	private MenuPanel menu = new MenuPanel();
-	private StartPanel start = new StartPanel();
-	private MembersPanel members = new MembersPanel();
-	private AddBallotPanel addBallot = new AddBallotPanel();
-	private AddMemberPanel addMember = new AddMemberPanel();
-	private ShakeTinPanel shakeTin = new ShakeTinPanel();
-	private DebatesPanel debates = new DebatesPanel();
+	//JPanels
+	private JPanel[] panels = {new MenuPanel(),new StartPanel(), new MembersPanel(), new AddBallotPanel(), new AddMemberPanel(),
+			new ShakeTinPanel(), new DebatesPanel()};
+	
+	//JButtons
+	private JButton[][] buttons = {{new JButton("Start"),new JButton("Members")},{new JButton("Add Ballot"), new JButton("Shake Tin"), new JButton("Menu")},
+			{new JButton("Add Member"),new JButton("Menu")},{new JButton("Confirm"), new JButton("Back")},
+			{new JButton("Confirm"), new JButton("Back")},{new JButton("Next")},
+			{new JButton("Menu")}};
+	private String[] panelKey = {"menu","start","members","addBallot","addMember","shakeTin","debates"};
 	
 	public Main() {
 		super("Debate Simulator");
 		setSize(Toolkit.getDefaultToolkit().getScreenSize()); //set the size of the screen = to the monitor size
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		
-		cards = new JPanel(cLayout);
-		cards.add(menu,"menu");
-		cards.add(start,"start");
-		cards.add(members,"members");
-		cards.add(addBallot,"addBallot");
-		cards.add(addMember,"addMember");
-		cards.add(shakeTin,"shakeTin");
-		cards.add(debates,"debates");
-		getContentPane().add(cards);
 	
+		//add buttons to corresponding panels
+		for (int i = 0; i < buttons.length; i++) {
+			for (int j = 0; j < buttons[i].length; j++) {
+				buttons[i][j].addActionListener(this);
+				panels[i].add(buttons[i][j]);
+			}
+		}
 		
+		//CardLayout
+		cards = new JPanel(cLayout);
+		for (int i = 0; i < panels.length; i++) {
+			cards.add(panels[i],panelKey[i]);
+		}
+		getContentPane().add(cards);
+
 		setVisible(true);
 
 		myTimer = new Timer(100,this);
@@ -66,60 +74,54 @@ public class Main extends JFrame implements ActionListener{
 	@Override
 	public void actionPerformed(ActionEvent e) {
 		
-		if (menu.getStart()) {
+		repaint(); //graphics
+		
+		Object source = e.getSource();
+		//MenuPanel
+		if (source == buttons[0][0]) { //Start button
 			cLayout.show(cards, "start");
-			//going back to menu
-			if (start.getMenu()) {
-				menu.setStart(false); //reset flags
-				start.setMenu(false);
-				cLayout.first(cards);
-			}
-			//going to addBallot screen
-			else if (start.get_addBallot()) {
-				cLayout.show(cards, "addBallot");
-				if (addBallot.getBack()) {
-					start.set_addBallot(false);
-					addBallot.setBack(false);
-					cLayout.show(cards, "start");
-				}
-				else if (addBallot.getConfirm()) {
-					start.set_addBallot(false);
-					addBallot.setConfirm(false);
-					cLayout.show(cards,"start");
-				}
-			}
-			//go to shake tin screen
-			else if (start.get_shakeTin()) {
-				cLayout.show(cards, "shakeTin");
-				//go to debates screen -- remember to reset all these flags eventually
-				if (shakeTin.getNext()) {
-					cLayout.show(cards, "debates");
-				}
-			}
 		}
-		else if (menu.getMembers()) {
+		else if (source == buttons[0][1]) { //Members button
 			cLayout.show(cards, "members");
-			
-			//go back to menu
-			if (members.getMenu()) {
-				menu.setMembers(false); //reset flags
-				members.setMenu(false);
-				cLayout.first(cards);
-			}
-			//go to addMember screen
-			else if (members.get_addMember()) {
-				cLayout.show(cards, "addMember");				
-				if (addMember.getBack()) {
-					members.set_addMember(false);
-					addMember.setBack(false);
-					cLayout.show(cards, "members");
-				}
-				else if (addMember.getConfirm()) {
-					members.set_addMember(false);
-					addMember.setConfirm(false);
-					cLayout.show(cards,"members");
-				}
-			}
+		}
+		//StartPanel
+		else if (source == buttons[1][0]) { //Add Ballot button
+			cLayout.show(cards, "addBallot");
+		}
+		else if (source == buttons[1][1]) { //Shake Tin button
+			cLayout.show(cards, "shakeTin");
+		}
+		else if (source == buttons[1][2]) { //Menu button
+			cLayout.first(cards);
+		}
+		//MembersPanel
+		else if (source == buttons[2][0]) { //Add Member button
+			cLayout.show(cards, "addMember");
+		}
+		else if (source == buttons[2][1]) { //Menu button
+			cLayout.first(cards);
+		}
+		//AddBallotPanel
+		else if (source == buttons[3][0]) { //Confirm button
+			cLayout.show(cards, "start");
+		}
+		else if (source == buttons[3][1]) { //Back button
+			cLayout.show(cards, "start");
+		}
+		//AddMemberPanel
+		else if (source == buttons[4][0]) { //Confirm button
+			cLayout.show(cards, "members");
+		}
+		else if (source == buttons[4][1]) { //Back button
+			cLayout.show(cards, "members");
+		}
+		//ShakeTinPanel
+		else if (source == buttons[5][0]) { //Next button
+			cLayout.show(cards, "debates");
+		}
+		//DebatesPanel
+		else if (source == buttons[6][0]) { //Menu button
+			cLayout.first(cards);
 		}
 	}
 	
@@ -132,41 +134,17 @@ public class Main extends JFrame implements ActionListener{
 class MenuPanel extends JPanel implements MouseListener{
 	
 	private JLabel[] labels = {new JLabel("Massey Debate"),new JLabel("Simulator")};
-	private JButton[] buttons = {new JButton("Start"),new JButton("Members")};
-
-	private boolean start, members;
 	
 	public MenuPanel() {
 		//labels
 		for (JLabel l : labels) {
 			add(l);
 		}
-		
-		
-		//buttons
-		for (JButton b : buttons) {
-			b.addMouseListener(this);
-			add(b);
-		}
 	}
-	
-	//getters
-	public boolean getStart() {return start;}
-	public boolean getMembers() {return members;};
-	//setters
-	public void setStart(boolean b) {start = b;}
-	public void setMembers(boolean b) {members = b;}
 	
 	//key listener methods
 	@Override
 	public void mouseClicked(MouseEvent e) {
-		Object source = e.getSource();
-		if (source == buttons[0]) {
-			start = true;
-		}
-		else if (source == buttons[1]) {
-			members = true;
-		}
 	}
 	@Override
 	public void mouseEntered(MouseEvent arg0) {
@@ -184,39 +162,12 @@ class MenuPanel extends JPanel implements MouseListener{
 }
 
 class StartPanel extends JPanel implements MouseListener{
-	
-	private JButton[] buttons = {new JButton("Add Ballot"), new JButton("Shake Tin"), new JButton("Menu")};
-	private boolean addBallot,shakeTin,menu;
-	
-	public StartPanel() {
-		
-		for (JButton b : buttons) {
-			b.addMouseListener(this);
-			add(b);
-		}
-	}
-	
-	//getters
-	public boolean get_addBallot() {return addBallot;}
-	public boolean get_shakeTin() {return shakeTin;}
-	public boolean getMenu() {return menu;}
 
-	//setters
-	public void setMenu(boolean b) {menu = b;}
-	public void set_addBallot(boolean b) {addBallot = b;}
+	public StartPanel() {
+	}
 	
 	@Override
 	public void mouseClicked(MouseEvent e) {
-		Object source = e.getSource();
-		if (source == buttons[0]) {
-			addBallot = true;
-		}
-		else if (source == buttons[1]) {
-			shakeTin = true;
-		}
-		else if (source == buttons[2]) {
-			menu = true;
-		}
 	}
 	@Override
 	public void mouseEntered(MouseEvent arg0) {
@@ -234,9 +185,6 @@ class StartPanel extends JPanel implements MouseListener{
 
 class AddBallotPanel extends JPanel implements MouseListener{
 	
-	private JButton[] buttons = {new JButton("Add Judge"), new JButton("Confirm"), new JButton("Back")};
-	private boolean confirm,back;
-	
 	private JComboBox enter_name;
 	private String[] sample_names = {"Rahma","Jenny","Adam","Vinh","Albert","Zak","Poonam","Georgia"}; //replace with list of member names
 	
@@ -247,52 +195,16 @@ class AddBallotPanel extends JPanel implements MouseListener{
 		enter_name.setEditable(true);
 		enter_name.addMouseListener(this);
 		add(enter_name);
-		
-		//buttons
-		for (JButton b : buttons) {
-			b.addMouseListener(this);
-			add(b);
-		}
 	}
-	
-	//getters
-	public boolean getConfirm() {return confirm;}
-	public boolean getBack() {return back;}
-
-	//setters
-	public void setConfirm(boolean b) {confirm = b;}
-	public void setBack(boolean b) {back = b;}
-	
-	//graphics
-	@Override
-	public void paintComponent(Graphics g) {
-		super.paintComponent(g);
-		
-	
-		//enter_name.requestFocus();
-	
-	}
-	
 	
 	@Override
 	public void mouseClicked(MouseEvent e) {
-		Object source = e.getSource();
-
-		//buttons
-		if (source == buttons[0]) {
-			confirm = true;
-		}
-		else if (source == buttons[1]) {
-			back = true;
-		}
 	}
 	@Override
 	public void mouseEntered(MouseEvent e) {		
-
 	}
 	@Override
 	public void mouseExited(MouseEvent e) {
-
 	}
 	@Override
 	public void mousePressed(MouseEvent arg0) {
@@ -300,33 +212,15 @@ class AddBallotPanel extends JPanel implements MouseListener{
 	@Override
 	public void mouseReleased(MouseEvent arg0) {	
 	}
-
 }
 
 class ShakeTinPanel extends JPanel implements MouseListener {
 	
-	private JButton[] buttons = {new JButton("Next")};
-	private boolean next;
-	
 	public ShakeTinPanel() {
-		
-		for (JButton b : buttons) {
-			b.addMouseListener(this);
-			add(b);
-		}
-	}
-	
-	//getters
-	public boolean getNext() {
-		return next;
 	}
 
 	@Override
 	public void mouseClicked(MouseEvent e) {
-		Object source = e.getSource();
-		if (source == buttons[0]) {
-			next = true;
-		}
 	}
 	@Override
 	public void mouseEntered(MouseEvent arg0) {
@@ -365,34 +259,11 @@ class DebatesPanel extends JPanel implements MouseListener {
 
 class MembersPanel extends JPanel implements MouseListener{
 	
-	private JButton[] buttons = {new JButton("Add Member"),new JButton("Menu")}; 
-	private boolean addMember,menu;
-	
 	public MembersPanel() {
-		
-		for (JButton b : buttons) {
-			b.addMouseListener(this);
-			add(b);
-		}
 	}
-	
-	//getters
-	public boolean get_addMember() {return addMember;}
-	public boolean getMenu() {return menu;}
-
-	//setters
-	public void setMenu(boolean b) {menu = b;}
-	public void set_addMember(boolean b) {addMember = b;}
 	
 	@Override
 	public void mouseClicked(MouseEvent e) {
-		Object source = e.getSource();
-		if (source == buttons[0]) {
-			addMember = true;
-		}
-		else if (source == buttons[1]) {
-			menu = true;
-		}
 	}
 	@Override
 	public void mouseEntered(MouseEvent arg0) {
@@ -409,10 +280,7 @@ class MembersPanel extends JPanel implements MouseListener{
 }
 
 class AddMemberPanel extends JPanel implements MouseListener{
-		
-	private JButton[] buttons = {new JButton("Confirm"), new JButton("Back")};
-	private boolean confirm,back;
-
+	
 	private Avatar newAvatar; //change to member after - temporary to test physical appearance things
 	private JButton[] gender_buttons = {new JButton("Male"),new JButton("Female")};
 	private JButton[] skin_buttons = {new JButton(), new JButton(), new JButton(), new JButton(), new JButton()};
@@ -423,12 +291,10 @@ class AddMemberPanel extends JPanel implements MouseListener{
 	private Image[][][][] sprites = new Image[2][5][4][10];  
 		
 	private JTextField name;
-	private boolean label_clicked;
 	
 	public AddMemberPanel() {
 		
 		name = new JTextField(20);
-		name.addMouseListener(this);
 		add(name);
 		
 		//Member making buttons
@@ -447,13 +313,7 @@ class AddMemberPanel extends JPanel implements MouseListener{
 			b.addMouseListener(this);
 			add(b);
 		}
-		
-		//button formatting
-		for (JButton b : buttons) {
-			b.addMouseListener(this);
-			add(b);
-		}	
-		
+	
 		//load all sprite images
 		String g,s; // temporary variables gender, skin color
 		for (int i = 0; i < 2; i++) { //gender loop
@@ -483,42 +343,17 @@ class AddMemberPanel extends JPanel implements MouseListener{
 		
 	}
 
-	//getters
-	public boolean getConfirm() {return confirm;}
-	public boolean getBack() {return back;}
-
-	//setters
-	public void setConfirm(boolean b) {confirm = b;}
-	public void setBack(boolean b) {back = b;}
-	
 	//graphics
 	@Override
 	public void paintComponent(Graphics g) {
 		super.paintComponent(g);
 		newAvatar.draw(g);
-		
-		if (label_clicked) {
-			name.requestFocus();
-		}
 	}
 	
-
 	@Override
 	public void mouseClicked(MouseEvent e) {		
 		Object source = e.getSource();
-		
-		if (source == name) {
-			label_clicked = true;
-		}
-		
-		//for page navigation
-		if (source == buttons[0]) {
-			confirm = true;
-		}
-		else if (source == buttons[1]) {
-			back = true;
-		}
-		
+
 		//for Member creation
 		//gender
 		if (source == gender_buttons[0]) { //male
@@ -536,17 +371,12 @@ class AddMemberPanel extends JPanel implements MouseListener{
 				newAvatar = new Avatar(sprites[gender_int][skin_int]);
 			}
 		}
-		
 	}
 	@Override
 	public void mouseEntered(MouseEvent e) {
 	}
 	@Override
 	public void mouseExited(MouseEvent e) {
-		Object source = e.getSource();
-		if (source == name) {
-			label_clicked = false;
-		}
 	}
 	@Override
 	public void mousePressed(MouseEvent arg0) {
