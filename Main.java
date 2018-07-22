@@ -2,6 +2,8 @@ import java.awt.BorderLayout;
 import java.awt.CardLayout;
 import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.Font;
+import java.awt.FontFormatException;
 import java.awt.Graphics;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
@@ -23,6 +25,7 @@ import java.io.IOException;
 
 import javax.imageio.ImageIO;
 import javax.swing.BoxLayout;
+import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
@@ -32,6 +35,7 @@ import javax.swing.JPanel;
 import javax.swing.JRootPane;
 import javax.swing.JSplitPane;
 import javax.swing.JTextField;
+import javax.swing.SwingConstants;
 import javax.swing.Timer;
 
 public class Main extends JFrame implements ActionListener{
@@ -54,6 +58,7 @@ public class Main extends JFrame implements ActionListener{
 	public Main() {
 		super("Debate Simulator");
 		setSize(Toolkit.getDefaultToolkit().getScreenSize()); //set the size of the screen = to the monitor size
+		setMinimumSize(new Dimension(700,300));
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 	
 		//add buttons to corresponding panels
@@ -79,6 +84,8 @@ public class Main extends JFrame implements ActionListener{
 	
 	@Override
 	public void actionPerformed(ActionEvent e) {
+		
+		System.out.println(this.getSize().toString());
 		
 		repaint(); //graphics
 		
@@ -139,61 +146,74 @@ public class Main extends JFrame implements ActionListener{
 
 class MenuPanel extends JPanel implements MouseListener{
 	
-	private JLabel[] labels = {new JLabel("Vincent Massey Secondary School"),new JLabel("Debate Simulator")};
+	private Font chalkFont;
+	private Image chalkboard;
+	private JLabel[] labels = {new ScalingLabel("Vincent Massey Secondary School"),new ScalingLabel("Debate Simulator")};
 	private JButton[] buttons;
 	
 	
 	public MenuPanel(JButton[] buttons) {
-				
+		
+		//load files
+		try {
+			chalkFont = Font.createFont(Font.TRUETYPE_FONT, new File("MenuFiles/chalkFont.ttf")).deriveFont(Font.PLAIN, 100);
+		} catch (FontFormatException | IOException e) {	e.printStackTrace();}
+		
 		//Layout
 		setLayout(new GridBagLayout());
 		GridBagConstraints c = new GridBagConstraints();
 		
 		//JLabels
-		//for (JLabel l : labels) {
-			//add(l);
-		//}
 		c.gridx = 0;
 		c.gridy = 0;
 		c.gridwidth = 3;
-		c.weightx = 0.5;
-		c.weighty = 0.5;
-		c.anchor = GridBagConstraints.PAGE_END;
+		c.weightx = 0.3;
+		c.weighty = 0.3;
+		c.anchor = GridBagConstraints.CENTER;		
+		c.fill = GridBagConstraints.BOTH;
+		labels[0].setFont(chalkFont.deriveFont(Font.PLAIN,50));
+		labels[0].setVerticalAlignment(SwingConstants.BOTTOM);
 		add(labels[0],c);
 		
 		c.gridx = 0;
 		c.gridy = 1;
 		c.gridwidth = 3;
-		c.weightx = 0.3;
-		c.weighty = 0.3;
-		c.anchor = GridBagConstraints.PAGE_START;
+		c.weightx = 0.4;
+		c.weighty = 0.4;
+		//c.anchor = GridBagConstraints.CENTER;
+		c.fill = GridBagConstraints.BOTH;
+		labels[1].setFont(chalkFont);
+		labels[1].setVerticalAlignment(SwingConstants.TOP);
 		add(labels[1],c);
 		
 		//JButtons
 		this.buttons = buttons;
-		//for (JButton b : buttons) {
-			//add(b,BorderLayout.PAGE_END);
-		//}
+	
 		c.gridx = 0;
 		c.gridy = 2;
 		c.gridwidth = 1;
-		c.weightx = 0.2;
-		c.weighty = 0.2;
+		c.weightx = 0.3;
+		c.weighty = 0.3;
 		c.insets = new Insets(20,20,20,10);
 		c.fill = GridBagConstraints.BOTH;
-		c.anchor = GridBagConstraints.CENTER;
+		//c.anchor = GridBagConstraints.CENTER;
 		add(buttons[0],c);
 		
 		c.gridx = 2;
 		c.gridy = 2;
 		c.gridwidth = 1;
-		c.weightx = 0.2;
-		c.weighty = 0.2;
+		c.weightx = 0.3;
+		c.weighty = 0.3;
 		c.insets = new Insets(20,10,20,20);
 		c.fill = GridBagConstraints.BOTH;
-		c.anchor = GridBagConstraints.CENTER;
+		//c.anchor = GridBagConstraints.CENTER;
 		add(buttons[1],c);
 
+	}
+	
+	//graphics
+	public void paintComponent(Graphics g) {
+		super.paintComponent(g);
 	}
 	
 	//key listener methods
