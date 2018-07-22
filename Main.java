@@ -1,8 +1,12 @@
+import java.awt.BorderLayout;
 import java.awt.CardLayout;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
 import java.awt.Image;
+import java.awt.Insets;
 import java.awt.Point;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
@@ -25,6 +29,8 @@ import javax.swing.JComponent;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JRootPane;
+import javax.swing.JSplitPane;
 import javax.swing.JTextField;
 import javax.swing.Timer;
 
@@ -133,19 +139,60 @@ public class Main extends JFrame implements ActionListener{
 
 class MenuPanel extends JPanel implements MouseListener{
 	
-	private JLabel[] labels = {new JLabel("Massey Debate"),new JLabel("Simulator")};
+	private JLabel[] labels = {new JLabel("Vincent Massey Secondary School"),new JLabel("Debate Simulator")};
 	private JButton[] buttons;
 	
+	
 	public MenuPanel(JButton[] buttons) {
+				
+		//Layout
+		setLayout(new GridBagLayout());
+		GridBagConstraints c = new GridBagConstraints();
+		
 		//JLabels
-		for (JLabel l : labels) {
-			add(l);
-		}
+		//for (JLabel l : labels) {
+			//add(l);
+		//}
+		c.gridx = 0;
+		c.gridy = 0;
+		c.gridwidth = 3;
+		c.weightx = 0.5;
+		c.weighty = 0.5;
+		c.anchor = GridBagConstraints.PAGE_END;
+		add(labels[0],c);
+		
+		c.gridx = 0;
+		c.gridy = 1;
+		c.gridwidth = 3;
+		c.weightx = 0.3;
+		c.weighty = 0.3;
+		c.anchor = GridBagConstraints.PAGE_START;
+		add(labels[1],c);
+		
 		//JButtons
 		this.buttons = buttons;
-		for (JButton b : buttons) {
-			add(b);
-		}
+		//for (JButton b : buttons) {
+			//add(b,BorderLayout.PAGE_END);
+		//}
+		c.gridx = 0;
+		c.gridy = 2;
+		c.gridwidth = 1;
+		c.weightx = 0.2;
+		c.weighty = 0.2;
+		c.insets = new Insets(20,20,20,10);
+		c.fill = GridBagConstraints.BOTH;
+		c.anchor = GridBagConstraints.CENTER;
+		add(buttons[0],c);
+		
+		c.gridx = 2;
+		c.gridy = 2;
+		c.gridwidth = 1;
+		c.weightx = 0.2;
+		c.weighty = 0.2;
+		c.insets = new Insets(20,10,20,20);
+		c.fill = GridBagConstraints.BOTH;
+		c.anchor = GridBagConstraints.CENTER;
+		add(buttons[1],c);
 
 	}
 	
