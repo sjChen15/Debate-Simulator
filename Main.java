@@ -4,6 +4,7 @@ import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.FontFormatException;
+import java.awt.FontMetrics;
 import java.awt.Graphics;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
@@ -13,6 +14,8 @@ import java.awt.Point;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.ComponentEvent;
+import java.awt.event.ComponentListener;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
 import java.awt.event.KeyAdapter;
@@ -45,7 +48,7 @@ public class Main extends JFrame implements ActionListener{
 	private CardLayout cLayout = new CardLayout();
 	
 	//JButtons
-	private JButton[][] buttons = {{new JButton("Start"),new JButton("Members")},{new JButton("Add Ballot"), new JButton("Shake Tin"), new JButton("Menu")},
+	private JButton[][] buttons = {{new ScalingButton("Start"),new ScalingButton("Members")},{new JButton("Add Ballot"), new JButton("Shake Tin"), new JButton("Menu")},
 			{new JButton("Add Member"),new JButton("Menu")},{new JButton("Confirm"), new JButton("Back")},
 			{new JButton("Confirm"), new JButton("Back")},{new JButton("Next")},
 			{new JButton("Menu")}};
@@ -53,19 +56,18 @@ public class Main extends JFrame implements ActionListener{
 	
 	//JPanels
 	private JPanel[] panels = {new MenuPanel(buttons[0]),new StartPanel(buttons[1]), new MembersPanel(buttons[2]), new AddBallotPanel(buttons[3]), new AddMemberPanel(buttons[4]),
-				new ShakeTinPanel(buttons[5]), new DebatesPanel(buttons[6])};	
+				new ShakeTinPanel(buttons[5]), new DebatesPanel(buttons[6])}; //construct panels with buttons
 
 	public Main() {
 		super("Debate Simulator");
 		setSize(Toolkit.getDefaultToolkit().getScreenSize()); //set the size of the screen = to the monitor size
-		setMinimumSize(new Dimension(700,300));
+		setMinimumSize(new Dimension(700,700));
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 	
 		//add buttons to corresponding panels
 		for (int i = 0; i < buttons.length; i++) {
 			for (int j = 0; j < buttons[i].length; j++) {
 				buttons[i][j].addActionListener(this);
-				//panels[i].add(buttons[i][j]);
 			}
 		}
 		
@@ -84,8 +86,6 @@ public class Main extends JFrame implements ActionListener{
 	
 	@Override
 	public void actionPerformed(ActionEvent e) {
-		
-		System.out.println(this.getSize().toString());
 		
 		repaint(); //graphics
 		
@@ -147,7 +147,6 @@ public class Main extends JFrame implements ActionListener{
 class MenuPanel extends JPanel implements MouseListener{
 	
 	private Font chalkFont;
-	private Image chalkboard;
 	private JLabel[] labels = {new ScalingLabel("Vincent Massey Secondary School"),new ScalingLabel("Debate Simulator")};
 	private JButton[] buttons;
 	
@@ -171,7 +170,7 @@ class MenuPanel extends JPanel implements MouseListener{
 		c.weighty = 0.3;
 		c.anchor = GridBagConstraints.CENTER;		
 		c.fill = GridBagConstraints.BOTH;
-		labels[0].setFont(chalkFont.deriveFont(Font.PLAIN,50));
+		labels[0].setFont(chalkFont);
 		labels[0].setVerticalAlignment(SwingConstants.BOTTOM);
 		add(labels[0],c);
 		
@@ -196,7 +195,8 @@ class MenuPanel extends JPanel implements MouseListener{
 		c.weighty = 0.3;
 		c.insets = new Insets(20,20,20,10);
 		c.fill = GridBagConstraints.BOTH;
-		//c.anchor = GridBagConstraints.CENTER;
+		//buttons[0].setFont(chalkFont);
+		//buttons[0].setBackground(new Color(0,0,0,0));
 		add(buttons[0],c);
 		
 		c.gridx = 2;
@@ -206,15 +206,17 @@ class MenuPanel extends JPanel implements MouseListener{
 		c.weighty = 0.3;
 		c.insets = new Insets(20,10,20,20);
 		c.fill = GridBagConstraints.BOTH;
-		//c.anchor = GridBagConstraints.CENTER;
+		//buttons[1].setFont(chalkFont);
+		//buttons[1].setBackground(new Color(0,0,0,0));
 		add(buttons[1],c);
-
+	
 	}
 	
 	//graphics
 	public void paintComponent(Graphics g) {
 		super.paintComponent(g);
 	}
+	
 	
 	//key listener methods
 	@Override
