@@ -146,7 +146,7 @@ public class Main extends JFrame implements ActionListener{
 
 class MenuPanel extends JPanel implements MouseListener{
 	
-	private Font chalkFont;
+	private Font font;
 	private JLabel[] labels = {new ScalingLabel("Vincent Massey Secondary School"),new ScalingLabel("Debate Simulator")};
 	private JButton[] buttons;
 	
@@ -155,7 +155,7 @@ class MenuPanel extends JPanel implements MouseListener{
 		
 		//load files
 		try {
-			chalkFont = Font.createFont(Font.TRUETYPE_FONT, new File("MenuFiles/chalkFont.ttf")).deriveFont(Font.PLAIN, 100);
+			font = Font.createFont(Font.TRUETYPE_FONT, new File("MenuFiles/Roboto-Regular.ttf")).deriveFont(Font.PLAIN, 100);
 		} catch (FontFormatException | IOException e) {	e.printStackTrace();}
 		
 		//Layout
@@ -170,7 +170,7 @@ class MenuPanel extends JPanel implements MouseListener{
 		c.weighty = 0.3;
 		c.anchor = GridBagConstraints.CENTER;		
 		c.fill = GridBagConstraints.BOTH;
-		labels[0].setFont(chalkFont);
+		labels[0].setFont(font);
 		labels[0].setVerticalAlignment(SwingConstants.BOTTOM);
 		add(labels[0],c);
 		
@@ -181,7 +181,7 @@ class MenuPanel extends JPanel implements MouseListener{
 		c.weighty = 0.4;
 		//c.anchor = GridBagConstraints.CENTER;
 		c.fill = GridBagConstraints.BOTH;
-		labels[1].setFont(chalkFont);
+		labels[1].setFont(font);
 		labels[1].setVerticalAlignment(SwingConstants.TOP);
 		add(labels[1],c);
 		
@@ -195,7 +195,7 @@ class MenuPanel extends JPanel implements MouseListener{
 		c.weighty = 0.3;
 		c.insets = new Insets(20,20,20,10);
 		c.fill = GridBagConstraints.BOTH;
-		//buttons[0].setFont(chalkFont);
+		buttons[0].setFont(font);
 		//buttons[0].setBackground(new Color(0,0,0,0));
 		add(buttons[0],c);
 		
@@ -206,7 +206,7 @@ class MenuPanel extends JPanel implements MouseListener{
 		c.weighty = 0.3;
 		c.insets = new Insets(20,10,20,20);
 		c.fill = GridBagConstraints.BOTH;
-		//buttons[1].setFont(chalkFont);
+		buttons[1].setFont(font);
 		//buttons[1].setBackground(new Color(0,0,0,0));
 		add(buttons[1],c);
 	

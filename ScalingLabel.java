@@ -25,9 +25,9 @@ public class ScalingLabel extends JLabel implements ComponentListener{
 		Font font = getFont();
 		FontMetrics metrics = getFontMetrics(font);
 		float size = font.getSize2D();
-		float textWidth = metrics.stringWidth(getText());
-		size = (float)Math.floor(((getWidth()-50.0) / textWidth) * size); // - 50 to add a small border
-		setFont(font.deriveFont(Font.CENTER_BASELINE,size));
+		float textWidth = metrics.stringWidth(getText())+100; // + 50 to add a border
+		size = (float)Math.floor((getWidth() / textWidth) * size);
+		setFont(font.deriveFont(Font.CENTER_BASELINE,(int)size));
 		setHorizontalAlignment(SwingConstants.CENTER);
 	}
 	@Override
