@@ -10,6 +10,9 @@ import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.io.*;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
 import java.util.*;
 import java.util.Timer;
 
@@ -29,6 +32,7 @@ public class Main extends JFrame implements ActionListener{
 	private AddMemberPanel addMember = new AddMemberPanel();
 	private ShakeTinPanel shakeTin = new ShakeTinPanel();
 	private DebatesPanel debates = new DebatesPanel();
+	private BTree memberTree;
 	
 	public Main() {
 		super("Debate Simulator");
@@ -49,6 +53,25 @@ public class Main extends JFrame implements ActionListener{
 
 		myTimer = new javax.swing.Timer(100,this);
 		myTimer.start();
+	}
+
+	public void makeMemberTree(){
+		memberTree = new BTree();
+		try{
+			File file = new File("Debators.txt");
+
+			BufferedReader br = new BufferedReader(new FileReader(file));
+
+			String st;
+			while ((st = br.readLine()) != null){
+				Member m = new Member(st);
+				memberTree.add(m);
+			}
+		}
+		catch(IOException ex){
+			ex.printStackTrace();
+		}
+
 	}
 	
 	@Override
@@ -377,17 +400,18 @@ class AddMemberPanel extends JPanel implements MouseListener,ActionListener{
 	//gender (male,female) x skin colors (light,tanned,tanned2,dark,dark2) x direction(up,down,right,left) x number of pictures
 	private Image[][][][] sprites = new Image[2][5][4][10];
 
-	//private JTextField name = new JTextField(); //textbox
+	private JTextField nameField; //textbox
+	//private String textBoxName;
 	//i give up so im going to get keyboard input for now
-	private JButton name_button = new JButton("Name");
+	//private JButton name_button = new JButton("Name");
 	private JButton[] grade_buttons = {new JButton("9"),new JButton("10"),new JButton("11"),new JButton("12")}; //choose grade buttons
 	private JButton[] exp_buttons = {new JButton("Senior"),new JButton("Junior")}; //choose exp buttons
 	private String name;
 	private int grade; //grade
 	private boolean senior; //exp
-	private JLabel name_label = new JLabel("Name: ");
-	private JLabel grade_label = new JLabel("Grade: ");
-	private JLabel exp_label = new JLabel("Experience: ");
+	private JLabel name_label;
+	private JLabel grade_label;
+	private JLabel exp_label;
 
 	
 	public AddMemberPanel() {
@@ -408,9 +432,11 @@ class AddMemberPanel extends JPanel implements MouseListener,ActionListener{
 			b.addMouseListener(this);
 			add(b);
 		}
-		//name button
-		name_button.addMouseListener(this);
-		add(name_button);
+
+		//lets try some text things
+		nameField = new JTextField(20);
+		nameField.addMouseListener(this);
+		add(nameField);
 
 		//grade buttons
 		for(JButton b: grade_buttons){
@@ -429,8 +455,14 @@ class AddMemberPanel extends JPanel implements MouseListener,ActionListener{
 			b.addMouseListener(this);
 			add(b);
 		}
+
+		name_label = new JLabel("Name: ");
 		add(name_label);
+
+		grade_label = new JLabel("Grade: ");
 		add(grade_label);
+
+		exp_label = new JLabel("Experience: ");
 		add(exp_label);
 		
 		//load all sprite images
@@ -486,15 +518,25 @@ class AddMemberPanel extends JPanel implements MouseListener,ActionListener{
 			if(name!=null && grade!=0){ //make sure these have been filled in
 				confirm = true;
 				Member m = new Member(name,grade,senior,gender_int,skin_int);
-
-				try{
-					System.out.println("hello?");
-					FileWriter writer = new FileWriter("Debators.txt");
-					PrintWriter printWriter = new PrintWriter(writer);
-					printWriter.print(name+" "+grade+" "+senior+" "+gender_int+" "+skin_int);
+				String txtFileInfo; //the string that will be written into the txt file
+				if(senior){
+					txtFileInfo = name+" "+grade+" true 0 0 0 0 "+gender_int+" "+skin_int;
 				}
-				catch (IOException ex) {ex.printStackTrace();}
+				else{
+					txtFileInfo = name+" "+grade+" false 0 0 0 0 "+gender_int+" "+skin_int;
+				}
 
+				try {
+				//	Files.write(Paths.get("Debators.txt"),txtFileInfo.getBytes(), StandardOpenOption.APPEND);
+					BufferedWriter writer = new BufferedWriter(new FileWriter("Debators.txt",true));
+					writer.write(txtFileInfo);
+					writer.newLine();
+					writer.close();
+				}
+				catch(IOException ex){
+					ex.printStackTrace();
+				}
+				resetVariables(); //reset the variables
 			}
 			//TODO: make a tree
 		}
@@ -520,6 +562,7 @@ class AddMemberPanel extends JPanel implements MouseListener,ActionListener{
 			}
 		}
 		//name
+		/*
 		if(source == name_button){
 			System.out.println("Please enter name in form 'First Last'");
 			Scanner kb = new Scanner(System.in);
@@ -541,7 +584,8 @@ class AddMemberPanel extends JPanel implements MouseListener,ActionListener{
 			if(!name.equals("")){
 				name_label.setText("Name: "+firstNLast[0]+ " "+firstNLast[1]);
 			}
-		}
+		}*/
+
 		//grade
 		for(JButton b: grade_buttons){
 			if(source == b){
@@ -561,6 +605,44 @@ class AddMemberPanel extends JPanel implements MouseListener,ActionListener{
 		}
 		
 	}
+	//formmat the name in the textbox so it is in the correct format for the txt file
+	//also the name is formatted and displayed
+	public void fixName(){
+		if(name.indexOf(" ")!=-1 && name.indexOf(" ")!= name.length()-1){ //make sure the name has a space before formmating
+			name = name.toLowerCase();
+			char[] nameChars = name.toCharArray();
+
+			//change first letters of first and last name to uppercase
+			nameChars[0] = Character.toUpperCase(nameChars[0]);
+			int spaceIndex = name.indexOf(" ");
+			nameChars[spaceIndex+1] = Character.toUpperCase(nameChars[spaceIndex+1]);
+			String u = "_";
+			nameChars[spaceIndex] = u.charAt(0); //set the space to an underscore for the constructor
+			name = new String(nameChars);
+
+			//display name
+			String[] firstNLast = name.split("_");
+			if(!name.equals("")){
+				name_label.setText("Name: "+firstNLast[0]+ " "+firstNLast[1]);
+			}
+		}
+		else{
+			name_label.setText("Name: ");
+		}
+
+	}
+
+	//resets the variables
+	public void resetVariables(){
+		skin_int = 0; //skin
+		gender_int = 0; //gender
+		newAvatar = new Avatar(sprites[gender_int][skin_int]); //return to default display
+		nameField.setText("");
+		name = new String();
+		name_label.setText("Name: ");
+		grade_label.setText("Grade: ");
+		exp_label.setText("Experience: ");
+	}
 	@Override
 	public void mouseEntered(MouseEvent arg0) {
 	}
@@ -576,6 +658,8 @@ class AddMemberPanel extends JPanel implements MouseListener,ActionListener{
 	
 	@Override
 	public void actionPerformed(ActionEvent e) {
+		name = nameField.getText();
+		fixName(); //make the name correct for txt and display the name
 
 	}
 
