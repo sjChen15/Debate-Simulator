@@ -23,7 +23,9 @@ import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
+import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
 
 import javax.imageio.ImageIO;
@@ -53,23 +55,28 @@ public class Main extends JFrame implements ActionListener{
 			{new JButton("Confirm"), new JButton("Back")},{new JButton("Next")},
 			{new JButton("Menu")}};
 
+	private String[] panelKey = {"menu","start","members","addBallot","addMember","shakeTin","debates"};
 	//JPanels
 	private JPanel[] panels = {new MenuPanel(buttons[0]),new StartPanel(buttons[1]), new MembersPanel(buttons[2]), new AddBallotPanel(buttons[3]), new AddMemberPanel(buttons[4]),
 			new ShakeTinPanel(buttons[5]), new DebatesPanel(buttons[6])}; //construct panels with buttons
-	
+
 	public Main() {
 		super("Debate Simulator");
 		setSize(Toolkit.getDefaultToolkit().getScreenSize()); //set the size of the screen = to the monitor size
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-			
+
+		//add buttons to corresponding panels
+		for (int i = 0; i < buttons.length; i++) {
+			for (int j = 0; j < buttons[i].length; j++) {
+				buttons[i][j].addActionListener(this);
+			}
+		}
+		System.out.println(panels[4]);
+		//CardLayout
 		cards = new JPanel(cLayout);
-		cards.add(menu,"menu");
-		cards.add(start,"start");
-		cards.add(members,"members");
-		cards.add(addBallot,"addBallot");
-		cards.add(addMember,"addMember");
-		cards.add(shakeTin,"shakeTin");
-		cards.add(debates,"debates");
+		for (int i = 0; i < panels.length; i++) {
+			cards.add(panels[i],panelKey[i]);
+		}
 		getContentPane().add(cards);
 	
 		setVisible(true);
@@ -81,65 +88,57 @@ public class Main extends JFrame implements ActionListener{
 	
 	@Override
 	public void actionPerformed(ActionEvent e) {
-		if (menu.getStart()) {
+		repaint(); //graphics
+
+		Object source = e.getSource();
+		//MenuPanel
+		if (source == buttons[0][0]) { //Start button
 			cLayout.show(cards, "start");
-			//System.out.println(start.getNeedNewTree());
-			start.makeMemberTree();
-
-			//going back to menu
-			if (start.getMenu()) {
-				menu.setStart(false); //reset flags
-				start.setMenu(false);
-				cLayout.first(cards);
-			}
-			//going to addBallot screen
-			else if (start.get_addBallot()) {
-				cLayout.show(cards, "addBallot");
-				if (addBallot.getBack()) {
-					start.set_addBallot(false);
-					addBallot.setBack(false);
-					cLayout.show(cards, "start");
-				}
-				else if (addBallot.getConfirm()) {
-					start.set_addBallot(false);
-					addBallot.setConfirm(false);
-					cLayout.show(cards,"start");
-				}
-			}
-			//go to shake tin screen
-			else if (start.get_shakeTin()) {
-				cLayout.show(cards, "shakeTin");
-				//go to debates screen -- remember to reset all these flags eventually
-				if (shakeTin.getNext()) {
-					cLayout.show(cards, "debates");
-				}
-			}
 		}
-		else if (menu.getMembers()) {
+		else if (source == buttons[0][1]) { //Members button
 			cLayout.show(cards, "members");
-			//go back to menu
-			if (members.getMenu()) {
-				menu.setMembers(false); //reset flags
-				members.setMenu(false);
-				cLayout.first(cards);
+		}
+		//StartPanel
+		else if (source == buttons[1][0]) { //Add Ballot button
+			cLayout.show(cards, "addBallot");
+		}
+		else if (source == buttons[1][1]) { //Shake Tin button
+			cLayout.show(cards, "shakeTin");
+		}
+		else if (source == buttons[1][2]) { //Menu button
+			cLayout.first(cards);
+		}
+		//MembersPanel
+		else if (source == buttons[2][0]) { //Add Member button
+			cLayout.show(cards, "addMember");
+		}
+		else if (source == buttons[2][1]) { //Menu button
+			cLayout.first(cards);
+		}
+		//AddBallotPanel
+		else if (source == buttons[3][0]) { //Confirm button
+			if(((AddMemberPanel)panels[4]).canConfirm()){
+				cLayout.show(cards, "start");
 			}
-			//go to addMember screen
-			else if (members.get_addMember()) {
-				cLayout.show(cards, "addMember");
 
-				addMember.actionPerformed(e);
-				
-				if (addMember.getBack()) {
-					members.set_addMember(false);
-					addMember.setBack(false);
-					cLayout.show(cards, "members");
-				}
-				else if (addMember.getConfirm()) {
-					members.set_addMember(false);
-					addMember.setConfirm(false);
-					cLayout.show(cards,"members");
-				}
-			}
+		}
+		else if (source == buttons[3][1]) { //Back button
+			cLayout.show(cards, "start");
+		}
+		//AddMemberPanel
+		else if (source == buttons[4][0]) { //Confirm button
+			cLayout.show(cards, "members");
+		}
+		else if (source == buttons[4][1]) { //Back button
+			cLayout.show(cards, "members");
+		}
+		//ShakeTinPanel
+		else if (source == buttons[5][0]) { //Next button
+			cLayout.show(cards, "debates");
+		}
+		//DebatesPanel
+		else if (source == buttons[6][0]) { //Menu button
+			cLayout.first(cards);
 		}
 	}
 	
@@ -150,34 +149,78 @@ public class Main extends JFrame implements ActionListener{
 }
 
 class MenuPanel extends JPanel implements MouseListener{
+
+	private Font font;
+	private JLabel[] labels = {new ScalingLabel("Vincent Massey Secondary School"),new ScalingLabel("Debate Simulator")};
+	private JButton[] buttons;
 	
-	private JButton[] buttons = {new JButton("Start"),new JButton("Members")};
-	private boolean start, members;
-	
-	public MenuPanel() {
-		for (JButton b : buttons) {
-			b.addMouseListener(this);
-			add(b);
-		}
+	public MenuPanel(JButton[] buttons) {
+		//load files
+		try {
+			font = Font.createFont(Font.TRUETYPE_FONT, new File("MenuFiles/Roboto-Regular.ttf")).deriveFont(Font.PLAIN, 100);
+		} catch (FontFormatException | IOException e) {	e.printStackTrace();}
+
+		//Layout
+		setLayout(new GridBagLayout());
+		GridBagConstraints c = new GridBagConstraints();
+
+		//JLabels
+		c.gridx = 0;
+		c.gridy = 0;
+		c.gridwidth = 3;
+		c.weightx = 0.3;
+		c.weighty = 0.3;
+		c.anchor = GridBagConstraints.CENTER;
+		c.fill = GridBagConstraints.BOTH;
+		labels[0].setFont(font);
+		labels[0].setVerticalAlignment(SwingConstants.BOTTOM);
+		add(labels[0],c);
+
+		c.gridx = 0;
+		c.gridy = 1;
+		c.gridwidth = 3;
+		c.weightx = 0.4;
+		c.weighty = 0.4;
+		//c.anchor = GridBagConstraints.CENTER;
+		c.fill = GridBagConstraints.BOTH;
+		labels[1].setFont(font);
+		labels[1].setVerticalAlignment(SwingConstants.TOP);
+		add(labels[1],c);
+
+		//JButtons
+		this.buttons = buttons;
+
+		c.gridx = 0;
+		c.gridy = 2;
+		c.gridwidth = 1;
+		c.weightx = 0.3;
+		c.weighty = 0.3;
+		c.insets = new Insets(20,20,20,10);
+		c.fill = GridBagConstraints.BOTH;
+		buttons[0].setFont(font);
+		//buttons[0].setBackground(new Color(0,0,0,0));
+		add(buttons[0],c);
+
+		c.gridx = 2;
+		c.gridy = 2;
+		c.gridwidth = 1;
+		c.weightx = 0.3;
+		c.weighty = 0.3;
+		c.insets = new Insets(20,10,20,20);
+		c.fill = GridBagConstraints.BOTH;
+		buttons[1].setFont(font);
+		//buttons[1].setBackground(new Color(0,0,0,0));
+		add(buttons[1],c);
 	}
-	
-	//getters
-	public boolean getStart() {return start;}
-	public boolean getMembers() {return members;};
-	//setters
-	public void setStart(boolean b) {start = b;}
-	public void setMembers(boolean b) {members = b;}
-	
+
+	//graphics
+	public void paintComponent(Graphics g) {
+		super.paintComponent(g);
+	}
+
 	//key listener methods
 	@Override
 	public void mouseClicked(MouseEvent e) {
-		Object source = e.getSource();
-		if (source == buttons[0]) {
-			start = true;
-		}
-		else if (source == buttons[1]) {
-			members = true;
-		}
 	}
 	@Override
 	public void mouseEntered(MouseEvent arg0) {
@@ -196,19 +239,21 @@ class MenuPanel extends JPanel implements MouseListener{
 
 class StartPanel extends JPanel implements MouseListener{
 	//TODO: make a new tree everytime start is pressed
-	private JButton[] buttons = {new JButton("Add Ballot"), new JButton("Shake Tin"), new JButton("Menu")};
-	private boolean addBallot,shakeTin,menu;
-
 	private BTree memberTree;
 	private boolean needNewTree = true; //is true if user has just start program or has went back to menu from the start page
 
-	public StartPanel() {
+	private JButton[] buttons;
+
+	public StartPanel(JButton[] buttons) {
+
+		//buttons
+		this.buttons = buttons;
 		for (JButton b : buttons) {
-			b.addMouseListener(this);
 			add(b);
 		}
-	}
 
+	}
+/*
 	public void makeMemberTree(){
 		if(needNewTree){
 			memberTree = new BTree();
@@ -230,31 +275,10 @@ class StartPanel extends JPanel implements MouseListener{
 		}
 		needNewTree = false;
 		System.out.println(memberTree.display());
-	}
-
-	//getters
-	public boolean get_addBallot() {return addBallot;}
-	public boolean get_shakeTin() {return shakeTin;}
-	public boolean getMenu() {return menu;}
-
-	public boolean getNeedNewTree(){return needNewTree;}
-	//setters
-	public void setMenu(boolean b) {menu = b;}
-	public void set_addBallot(boolean b) {addBallot = b;}
+	}*/
 	
 	@Override
 	public void mouseClicked(MouseEvent e) {
-		Object source = e.getSource();
-		if (source == buttons[0]) {
-			addBallot = true;
-		}
-		else if (source == buttons[1]) {
-			shakeTin = true;
-		}
-		else if (source == buttons[2]) {
-			menu = true;
-			needNewTree = true;
-		}
 	}
 	@Override
 	public void mouseEntered(MouseEvent arg0) {
@@ -271,9 +295,10 @@ class StartPanel extends JPanel implements MouseListener{
 }
 
 class AddBallotPanel extends JPanel implements MouseListener{
-	
-	private JButton[] buttons = {new JButton("Confirm"), new JButton("Back")};
-	private boolean confirm,back;
+
+	private JButton[] buttons;
+	private JComboBox enter_name;
+	private String[] sample_names = {"Rahma","Jenny","Adam","Vinh","Albert","Zak","Poonam","Georgia"}; //replace with list of member names
 /*
 	private JLabel member1 = new JLabel("Member 1:");
 	private JTextField member_Name1 = new JTextField(20);
@@ -281,31 +306,23 @@ class AddBallotPanel extends JPanel implements MouseListener{
 	private JLabel member2 = new JLabel("Member 2:");*/
 
 
-	public AddBallotPanel() {
-		
+	public AddBallotPanel(JButton[] buttons) {
+
+		//JButtons
+		this.buttons = buttons;
 		for (JButton b : buttons) {
-			b.addMouseListener(this);
 			add(b);
 		}
-	}
-	
-	//getters
-	public boolean getConfirm() {return confirm;}
-	public boolean getBack() {return back;}
 
-	//setters
-	public void setConfirm(boolean b) {confirm = b;}
-	public void setBack(boolean b) {back = b;}
+		//JComboBox to enter names
+		enter_name = new JComboBox(sample_names);
+		enter_name.setEditable(true);
+		enter_name.addMouseListener(this);
+		add(enter_name);
+	}
 	
 	@Override
 	public void mouseClicked(MouseEvent e) {
-		Object source = e.getSource();
-		if (source == buttons[0]) {
-			confirm = true;
-		}
-		else if (source == buttons[1]) {
-			back = true;
-		}
 	}
 	@Override
 	public void mouseEntered(MouseEvent arg0) {
@@ -323,28 +340,19 @@ class AddBallotPanel extends JPanel implements MouseListener{
 
 class ShakeTinPanel extends JPanel implements MouseListener {
 	
-	private JButton[] buttons = {new JButton("Next")};
-	private boolean next;
+	private JButton[] buttons;
 	
-	public ShakeTinPanel() {
-		
+	public ShakeTinPanel(JButton[] buttons) {
+		//JButtons
+		this.buttons = buttons;
 		for (JButton b : buttons) {
-			b.addMouseListener(this);
 			add(b);
 		}
 	}
 	
 	//getters
-	public boolean getNext() {
-		return next;
-	}
-
 	@Override
 	public void mouseClicked(MouseEvent e) {
-		Object source = e.getSource();
-		if (source == buttons[0]) {
-			next = true;
-		}
 	}
 	@Override
 	public void mouseEntered(MouseEvent arg0) {
@@ -362,6 +370,15 @@ class ShakeTinPanel extends JPanel implements MouseListener {
 }
 
 class DebatesPanel extends JPanel implements MouseListener {
+	private JButton[] buttons;
+
+	public DebatesPanel(JButton[] buttons) {
+		//JButtons
+		this.buttons = buttons;
+		for (JButton b : buttons) {
+			add(b);
+		}
+	}
 
 	@Override
 	public void mouseClicked(MouseEvent arg0) {
@@ -383,34 +400,20 @@ class DebatesPanel extends JPanel implements MouseListener {
 
 class MembersPanel extends JPanel implements MouseListener{
 	
-	private JButton[] buttons = {new JButton("Add Member"),new JButton("Menu")}; 
-	private boolean addMember,menu;
-	
-	public MembersPanel() {
-		
+	private JButton[] buttons;
+
+	public MembersPanel(JButton[] buttons) {
+
+		//JButtons
+		this.buttons = buttons;
 		for (JButton b : buttons) {
-			b.addMouseListener(this);
 			add(b);
 		}
 	}
 	
 	//getters
-	public boolean get_addMember() {return addMember;}
-	public boolean getMenu() {return menu;}
-
-	//setters
-	public void setMenu(boolean b) {menu = b;}
-	public void set_addMember(boolean b) {addMember = b;}
-	
-	@Override
+		@Override
 	public void mouseClicked(MouseEvent e) {
-		Object source = e.getSource();
-		if (source == buttons[0]) {
-			addMember = true;
-		}
-		else if (source == buttons[1]) {
-			menu = true;
-		}
 	}
 	@Override
 	public void mouseEntered(MouseEvent arg0) {
@@ -427,9 +430,9 @@ class MembersPanel extends JPanel implements MouseListener{
 }
 
 class AddMemberPanel extends JPanel implements MouseListener,ActionListener{
-	
-	private JButton[] buttons = {new JButton("Confirm"), new JButton("Back")};
-	private boolean confirm,back;
+
+	//buttons[0] = "confirm" buttons[1] = "back"
+	private JButton[] buttons;
 	
 	private Avatar newAvatar; //change to member after - temporary to test physical appearance things
 	private JButton[] gender_buttons = {new JButton("Male"),new JButton("Female")};
@@ -437,14 +440,10 @@ class AddMemberPanel extends JPanel implements MouseListener,ActionListener{
 	private String[] skins = {"light","tanned","tanned2","dark","dark2"}; //related list for skin buttons
 	private int skin_int = 0; //keep track of current skin
 	private int gender_int = 0; //keep track of current gender
-
 	//gender (male,female) x skin colors (light,tanned,tanned2,dark,dark2) x direction(up,down,right,left) x number of pictures
 	private Image[][][][] sprites = new Image[2][5][4][10];
 
 	private JTextField nameField; //textbox
-	//private String textBoxName;
-	//i give up so im going to get keyboard input for now
-	//private JButton name_button = new JButton("Name");
 	private JButton[] grade_buttons = {new JButton("9"),new JButton("10"),new JButton("11"),new JButton("12")}; //choose grade buttons
 	private JButton[] exp_buttons = {new JButton("Senior"),new JButton("Junior")}; //choose exp buttons
 	private String name;
@@ -455,8 +454,14 @@ class AddMemberPanel extends JPanel implements MouseListener,ActionListener{
 	private JLabel exp_label;
 
 	
-	public AddMemberPanel() {
-				
+	public AddMemberPanel(JButton[] buttons) {
+
+		//JButtons
+		this.buttons = buttons;
+		for (JButton b : buttons) {
+			add(b);
+		}
+
 		//Member making buttons
 		for (JButton b : gender_buttons) {
 			b.addMouseListener(this);
@@ -468,15 +473,43 @@ class AddMemberPanel extends JPanel implements MouseListener,ActionListener{
 		skin_buttons[2].setBackground(new Color(236,196,121));
 		skin_buttons[3].setBackground(new Color(186,132,84));
 		skin_buttons[4].setBackground(new Color(156,102,62));
-		
+
 		for (JButton b : skin_buttons) {
 			b.addMouseListener(this);
 			add(b);
 		}
 
-		//lets try some text things
+		//load all sprite images
+		String g,s; // temporary variables gender, skin color
+		for (int i = 0; i < 2; i++) { //gender loop
+			for (int j = 0; j < 5; j++) { //skin color loop
+				for (int k = 0; k < 4; k++) { //direction loop
+					for (int l = 0; l < 9; l++) { //image
+
+						if (i == 0)
+							g = "male";
+						else
+							g = "female";
+
+						s = skins[j]; //use existing list
+
+						try {
+							if (s.charAt(s.length()-1) == '2')
+								sprites[i][j][k][l] = ImageIO.read(new File("Avatar/body/"+g+"/"+s+"/"+s+"_"+((l+1)+(k*9))+".png"));
+							else
+								sprites[i][j][k][l] = ImageIO.read(new File("Avatar/body/"+g+"/"+s+"/"+s+((l+1)+(k*9))+".png"));
+						} catch (IOException e) {e.printStackTrace();}
+					}
+				}
+			}
+		}
+		//male and light skin
+		newAvatar = new Avatar(sprites[gender_int][skin_int]); //default start
+
+		//JTextField
 		nameField = new JTextField(20);
 		nameField.addMouseListener(this);
+		nameField.addActionListener(this);
 		add(nameField);
 
 		//grade buttons
@@ -485,18 +518,13 @@ class AddMemberPanel extends JPanel implements MouseListener,ActionListener{
 			add(b);
 		}
 
-		//senior buttons
+		//experience buttons
 		for(JButton b: exp_buttons){
 			b.addMouseListener(this);
 			add(b);
 		}
-		
-		//button formatting
-		for (JButton b : buttons) {
-			b.addMouseListener(this);
-			add(b);
-		}
 
+		//informative labels
 		name_label = new JLabel("Name: ");
 		add(name_label);
 
@@ -505,147 +533,9 @@ class AddMemberPanel extends JPanel implements MouseListener,ActionListener{
 
 		exp_label = new JLabel("Experience: ");
 		add(exp_label);
-		
-		//load all sprite images
-		String g,s; // temporary variables gender, skin color
-		for (int i = 0; i < 2; i++) { //gender loop
-			for (int j = 0; j < 5; j++) { //skin color loop
-				for (int k = 0; k < 4; k++) { //direction loop
-					for (int l = 0; l < 9; l++) { //image
-						
-						if (i == 0) 
-							g = "male";
-						else
-							g = "female";
-						
-						s = skins[j]; //use existing list
-												
-						try {
-							if (s.charAt(s.length()-1) == '2') 
-								sprites[i][j][k][l] = ImageIO.read(new File("Avatar/body/"+g+"/"+s+"/"+s+"_"+((l+1)+(k*9))+".png"));
-							else
-								sprites[i][j][k][l] = ImageIO.read(new File("Avatar/body/"+g+"/"+s+"/"+s+((l+1)+(k*9))+".png"));
-						} catch (IOException e) {e.printStackTrace();}
-					}
-				}	
-			}
-		}
-							//male and light skin
-		newAvatar = new Avatar(sprites[gender_int][skin_int]); //default start
 
 	}
-	
-	//getters
-	public boolean getConfirm() {return confirm;}
-	public boolean getBack() {return back;}
 
-	//setters
-	public void setConfirm(boolean b) {confirm = b;}
-	public void setBack(boolean b) {back = b;}
-	
-	//graphics
-	public void paintComponent(Graphics g) {
-		super.paintComponent(g);
-		
-		newAvatar.draw(g,0,0);
-	}
-	
-
-	@Override
-	public void mouseClicked(MouseEvent e) {
-		Object source = e.getSource();
-		//for page navigation
-		if (source == buttons[0]) {
-			if(name!=null && grade!=0){ //make sure these have been filled in
-				confirm = true;
-				Member m = new Member(name,grade,senior,gender_int,skin_int);
-				String txtFileInfo; //the string that will be written into the txt file
-				if(senior){
-					txtFileInfo = name+" "+grade+" true 0 0 0 0 "+gender_int+" "+skin_int;
-				}
-				else{
-					txtFileInfo = name+" "+grade+" false 0 0 0 0 "+gender_int+" "+skin_int;
-				}
-
-				try {
-				//	Files.write(Paths.get("Debators.txt"),txtFileInfo.getBytes(), StandardOpenOption.APPEND);
-					BufferedWriter writer = new BufferedWriter(new FileWriter("Debators.txt",true));
-					writer.write(txtFileInfo);
-					writer.newLine();
-					writer.close();
-				}
-				catch(IOException ex){
-					ex.printStackTrace();
-				}
-				resetVariables(); //reset the variables
-			}
-			//TODO: make a tree
-		}
-		else if (source == buttons[1]) {
-			back = true;
-		}
-		
-		//for Member creation
-		//gender
-		if (source == gender_buttons[0]) { //male
-			gender_int = 0;
-			newAvatar = new Avatar(sprites[gender_int][skin_int]);
-		}
-		else if (source == gender_buttons[1]) { //female
-			gender_int = 1;
-			newAvatar = new Avatar(sprites[gender_int][skin_int]);
-		}
-		//skin
-		for (int i = 0; i < skin_buttons.length; i++) {
-			if (source == skin_buttons[i]) {
-				skin_int = i;
-				newAvatar = new Avatar(sprites[gender_int][skin_int]);
-			}
-		}
-		//name
-		/*
-		if(source == name_button){
-			System.out.println("Please enter name in form 'First Last'");
-			Scanner kb = new Scanner(System.in);
-			name = kb.nextLine(); //get the name
-			name = name.toLowerCase();
-			char[] nameChars = name.toCharArray();
-
-			//change first letters of first and last name to uppercase
-			nameChars[0] = Character.toUpperCase(nameChars[0]);
-			int spaceIndex = name.indexOf(" ");
-			nameChars[spaceIndex+1] = Character.toUpperCase(nameChars[spaceIndex+1]);
-			String u = "_";
-			nameChars[spaceIndex] = u.charAt(0); //set the space to an underscore for the constructor
-			name = new String(nameChars);
-			System.out.println(name);
-
-			//display name
-			String[] firstNLast = name.split("_");
-			if(!name.equals("")){
-				name_label.setText("Name: "+firstNLast[0]+ " "+firstNLast[1]);
-			}
-		}*/
-
-		//grade
-		for(JButton b: grade_buttons){
-			if(source == b){
-				grade = Integer.parseInt(b.getText());
-				grade_label.setText("Grade: "+grade);
-			}
-		}
-
-		//experience
-		if(source == exp_buttons[0]){
-			senior = true;
-			exp_label.setText("Experience: Senior");
-		}
-		else if(source == exp_buttons[1]){
-			senior = false;
-			exp_label.setText("Experience: Junior");
-		}
-		
-	}
 	//formmat the name in the textbox so it is in the correct format for the txt file
 	//also the name is formatted and displayed
 	public void fixName(){
@@ -684,6 +574,90 @@ class AddMemberPanel extends JPanel implements MouseListener,ActionListener{
 		grade_label.setText("Grade: ");
 		exp_label.setText("Experience: ");
 	}
+
+	//returns true if all information has been entered
+	public boolean canConfirm(){
+		System.out.println("hey");
+		if(name!=null && grade!=0){ //make sure these have been filled in
+				System.out.println("hello?");
+				writeToFile();
+				return true;
+		}
+		return false;
+	}
+
+	public void writeToFile(){
+		Member m = new Member(name,grade,senior,gender_int,skin_int);
+		String txtFileInfo; //the string that will be written into the txt file
+		if(senior){
+			txtFileInfo = name+" "+grade+" true 0 0 0 0 "+gender_int+" "+skin_int;
+		}
+		else{
+			txtFileInfo = name+" "+grade+" false 0 0 0 0 "+gender_int+" "+skin_int;
+		}
+		try {
+			BufferedWriter writer = new BufferedWriter(new FileWriter("Debators.txt",true));
+			writer.write(txtFileInfo);
+			writer.newLine();
+			writer.close();
+		}
+		catch(IOException ex){
+		ex.printStackTrace();
+		}
+		resetVariables(); //reset the variables
+	}
+
+	//graphics
+	public void paintComponent(Graphics g) {
+		super.paintComponent(g);
+		
+		newAvatar.draw(g);
+	}
+
+	@Override
+	public void mouseClicked(MouseEvent e) {
+		Object source = e.getSource();
+		//for page navigation
+		if (source == buttons[0]) {}
+		if (source == buttons[1]) {}
+		
+		//for Member creation
+		//gender
+		if (source == gender_buttons[0]) { //male
+			gender_int = 0;
+			newAvatar = new Avatar(sprites[gender_int][skin_int]);
+		}
+		else if (source == gender_buttons[1]) { //female
+			gender_int = 1;
+			newAvatar = new Avatar(sprites[gender_int][skin_int]);
+		}
+		//skin
+		for (int i = 0; i < skin_buttons.length; i++) {
+			if (source == skin_buttons[i]) {
+				skin_int = i;
+				newAvatar = new Avatar(sprites[gender_int][skin_int]);
+			}
+		}
+
+		//grade
+		for(JButton b: grade_buttons){
+			if(source == b){
+				grade = Integer.parseInt(b.getText());
+				grade_label.setText("Grade: "+grade);
+			}
+		}
+
+		//experience
+		if(source == exp_buttons[0]){
+			senior = true;
+			exp_label.setText("Experience: Senior");
+		}
+		else if(source == exp_buttons[1]){
+			senior = false;
+			exp_label.setText("Experience: Junior");
+		}
+		
+	}
 	@Override
 	public void mouseEntered(MouseEvent arg0) {
 	}
@@ -699,6 +673,7 @@ class AddMemberPanel extends JPanel implements MouseListener,ActionListener{
 	
 	@Override
 	public void actionPerformed(ActionEvent e) {
+		System.out.println("hey there beautiful");
 		name = nameField.getText();
 		fixName(); //make the name correct for txt and display the name
 
