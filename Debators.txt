@@ -1,0 +1,9 @@
+Jenny_Chen 12 true 0 0 0 0 1 2
+Harry_Stienfield 9 false 0 0 0 0 0 1
+Kristi_Clark 10 false 0 0 0 0 1 3
+Billie_Mckenzie 11 true 0 0 0 0 1 2
+Inez_Graham 10 true 0 0 0 0 1 0
+Ebony_Cook 9 false 0 0 0 0 1 0
+Shari_Garza 12 true 0 0 0 0 0 3
+Elena_Mitchell 11 true 0 0 0 0 1 2
+Sidney_Lawrence 9 false 0 0 0 0 1 2
