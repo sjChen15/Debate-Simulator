@@ -1,38 +1,61 @@
+import java.awt.BorderLayout;
 import java.awt.CardLayout;
 import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.Font;
+import java.awt.FontFormatException;
+import java.awt.FontMetrics;
 import java.awt.Graphics;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
 import java.awt.Image;
+import java.awt.Insets;
 import java.awt.Point;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.ComponentEvent;
+import java.awt.event.ComponentListener;
+import java.awt.event.FocusEvent;
+import java.awt.event.FocusListener;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
-import java.io.*;
-import java.nio.file.Files;
-import java.nio.file.Paths;
-import java.nio.file.StandardOpenOption;
-import java.util.*;
-import java.util.Timer;
+import java.io.File;
+import java.io.IOException;
 
 import javax.imageio.ImageIO;
-import javax.swing.*;
+import javax.swing.BoxLayout;
+import javax.swing.ImageIcon;
+import javax.swing.JButton;
+import javax.swing.JComboBox;
+import javax.swing.JComponent;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JRootPane;
+import javax.swing.JSplitPane;
+import javax.swing.JTextField;
+import javax.swing.SwingConstants;
+import javax.swing.Timer;
 
 public class Main extends JFrame implements ActionListener{
 	
 	private javax.swing.Timer myTimer;
 	private JPanel cards;
 	private CardLayout cLayout = new CardLayout();
-	
-	private MenuPanel menu = new MenuPanel();
-	private StartPanel start = new StartPanel();
-	private MembersPanel members = new MembersPanel();
-	private AddBallotPanel addBallot = new AddBallotPanel();
-	private AddMemberPanel addMember = new AddMemberPanel();
-	private ShakeTinPanel shakeTin = new ShakeTinPanel();
-	private DebatesPanel debates = new DebatesPanel();
-	private BTree memberTree;
+
+	//JButtons
+	private JButton[][] buttons = {{new ScalingButton("Start"),new ScalingButton("Members")},{new JButton("Add Ballot"), new JButton("Shake Tin"), new JButton("Menu")},
+			{new JButton("Add Member"),new JButton("Menu")},{new JButton("Confirm"), new JButton("Back")},
+			{new JButton("Confirm"), new JButton("Back")},{new JButton("Next")},
+			{new JButton("Menu")}};
+
+	//JPanels
+	private JPanel[] panels = {new MenuPanel(buttons[0]),new StartPanel(buttons[1]), new MembersPanel(buttons[2]), new AddBallotPanel(buttons[3]), new AddMemberPanel(buttons[4]),
+			new ShakeTinPanel(buttons[5]), new DebatesPanel(buttons[6])}; //construct panels with buttons
 	
 	public Main() {
 		super("Debate Simulator");
@@ -55,29 +78,14 @@ public class Main extends JFrame implements ActionListener{
 		myTimer.start();
 	}
 
-	public void makeMemberTree(){
-		memberTree = new BTree();
-		try{
-			File file = new File("Debators.txt");
-
-			BufferedReader br = new BufferedReader(new FileReader(file));
-
-			String st;
-			while ((st = br.readLine()) != null){
-				Member m = new Member(st);
-				memberTree.add(m);
-			}
-		}
-		catch(IOException ex){
-			ex.printStackTrace();
-		}
-
-	}
 	
 	@Override
 	public void actionPerformed(ActionEvent e) {
 		if (menu.getStart()) {
 			cLayout.show(cards, "start");
+			//System.out.println(start.getNeedNewTree());
+			start.makeMemberTree();
+
 			//going back to menu
 			if (start.getMenu()) {
 				menu.setStart(false); //reset flags
@@ -190,20 +198,46 @@ class StartPanel extends JPanel implements MouseListener{
 	//TODO: make a new tree everytime start is pressed
 	private JButton[] buttons = {new JButton("Add Ballot"), new JButton("Shake Tin"), new JButton("Menu")};
 	private boolean addBallot,shakeTin,menu;
-	
+
+	private BTree memberTree;
+	private boolean needNewTree = true; //is true if user has just start program or has went back to menu from the start page
+
 	public StartPanel() {
-		
 		for (JButton b : buttons) {
 			b.addMouseListener(this);
 			add(b);
 		}
 	}
-	
+
+	public void makeMemberTree(){
+		if(needNewTree){
+			memberTree = new BTree();
+			try{
+				File file = new File("Debators.txt");
+				BufferedReader br = new BufferedReader(new FileReader(file));
+
+				String st;
+				while ((st = br.readLine()) != null){
+					//System.out.println(st);
+					Member m = new Member(st);
+					memberTree.add(m);
+					//System.out.println(m.getName());
+				}
+			}
+			catch(IOException ex){
+				ex.printStackTrace();
+			}
+		}
+		needNewTree = false;
+		System.out.println(memberTree.display());
+	}
+
 	//getters
 	public boolean get_addBallot() {return addBallot;}
 	public boolean get_shakeTin() {return shakeTin;}
 	public boolean getMenu() {return menu;}
 
+	public boolean getNeedNewTree(){return needNewTree;}
 	//setters
 	public void setMenu(boolean b) {menu = b;}
 	public void set_addBallot(boolean b) {addBallot = b;}
@@ -219,6 +253,7 @@ class StartPanel extends JPanel implements MouseListener{
 		}
 		else if (source == buttons[2]) {
 			menu = true;
+			needNewTree = true;
 		}
 	}
 	@Override
@@ -239,7 +274,13 @@ class AddBallotPanel extends JPanel implements MouseListener{
 	
 	private JButton[] buttons = {new JButton("Confirm"), new JButton("Back")};
 	private boolean confirm,back;
-	
+/*
+	private JLabel member1 = new JLabel("Member 1:");
+	private JTextField member_Name1 = new JTextField(20);
+
+	private JLabel member2 = new JLabel("Member 2:");*/
+
+
 	public AddBallotPanel() {
 		
 		for (JButton b : buttons) {
@@ -506,7 +547,7 @@ class AddMemberPanel extends JPanel implements MouseListener,ActionListener{
 	public void paintComponent(Graphics g) {
 		super.paintComponent(g);
 		
-		newAvatar.draw(g);
+		newAvatar.draw(g,0,0);
 	}
 	
 

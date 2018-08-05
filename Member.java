@@ -1,5 +1,6 @@
 //Member.java
 
+import org.omg.PortableInterceptor.SYSTEM_EXCEPTION;
 import sun.audio.*;
 import java.io.*;
 import java.util.*;
@@ -9,6 +10,7 @@ import javax.swing.*;
 
 /*
 sample line
+name grade experience debatesWon debatesLost timesGov timesOp gender skin
 Jenny_Chen 12 true 0 0 0 0 1 3
 */
 public class Member {
@@ -30,6 +32,10 @@ public class Member {
     //constructor
     public Member(String line) {
         String[] info = line.split(" ");
+        /*for(int i = 0; i<info.length; i++){
+            System.out.println(info[i]);
+        }
+        System.out.println("/n new member");*/
         name = info[0]; //will be in the form "First.Last"
         grade = Integer.parseInt(info[1]);
         if(info[2].equals("true")){
