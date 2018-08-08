@@ -23,10 +23,7 @@ import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
+import java.io.*;
 
 import javax.imageio.ImageIO;
 import javax.swing.BoxLayout;
@@ -42,6 +39,7 @@ import javax.swing.JSplitPane;
 import javax.swing.JTextField;
 import javax.swing.SwingConstants;
 import javax.swing.Timer;
+import javax.swing.text.JTextComponent;
 
 public class Main extends JFrame implements ActionListener{
 	
@@ -71,7 +69,7 @@ public class Main extends JFrame implements ActionListener{
 				buttons[i][j].addActionListener(this);
 			}
 		}
-		System.out.println(panels[4]);
+
 		//CardLayout
 		cards = new JPanel(cLayout);
 		for (int i = 0; i < panels.length; i++) {
@@ -93,6 +91,7 @@ public class Main extends JFrame implements ActionListener{
 		Object source = e.getSource();
 		//MenuPanel
 		if (source == buttons[0][0]) { //Start button
+			((StartPanel)panels[1]).makeMemberTree();
 			cLayout.show(cards, "start");
 		}
 		else if (source == buttons[0][1]) { //Members button
@@ -100,6 +99,8 @@ public class Main extends JFrame implements ActionListener{
 		}
 		//StartPanel
 		else if (source == buttons[1][0]) { //Add Ballot button
+            ((AddBallotPanel)panels[3]).setMemberTree(((StartPanel)panels[1]).getMemberTree());
+            ((AddBallotPanel)panels[3]).updateBoxes();
 			cLayout.show(cards, "addBallot");
 		}
 		else if (source == buttons[1][1]) { //Shake Tin button
@@ -117,9 +118,7 @@ public class Main extends JFrame implements ActionListener{
 		}
 		//AddBallotPanel
 		else if (source == buttons[3][0]) { //Confirm button
-			if(((AddMemberPanel)panels[4]).canConfirm()){
-				cLayout.show(cards, "start");
-			}
+			cLayout.show(cards, "start");
 
 		}
 		else if (source == buttons[3][1]) { //Back button
@@ -127,7 +126,9 @@ public class Main extends JFrame implements ActionListener{
 		}
 		//AddMemberPanel
 		else if (source == buttons[4][0]) { //Confirm button
-			cLayout.show(cards, "members");
+			if(((AddMemberPanel)panels[4]).canConfirm()) {
+				cLayout.show(cards, "members");
+			}
 		}
 		else if (source == buttons[4][1]) { //Back button
 			cLayout.show(cards, "members");
@@ -238,8 +239,8 @@ class MenuPanel extends JPanel implements MouseListener{
 }
 
 class StartPanel extends JPanel implements MouseListener{
-	//TODO: make a new tree everytime start is pressed
 	private BTree memberTree;
+	private int numOfMembers; //the number of members in the tree
 	private boolean needNewTree = true; //is true if user has just start program or has went back to menu from the start page
 
 	private JButton[] buttons;
@@ -253,30 +254,35 @@ class StartPanel extends JPanel implements MouseListener{
 		}
 
 	}
-/*
-	public void makeMemberTree(){
-		if(needNewTree){
-			memberTree = new BTree();
-			try{
-				File file = new File("Debators.txt");
-				BufferedReader br = new BufferedReader(new FileReader(file));
 
-				String st;
-				while ((st = br.readLine()) != null){
-					//System.out.println(st);
-					Member m = new Member(st);
-					memberTree.add(m);
-					//System.out.println(m.getName());
-				}
-			}
-			catch(IOException ex){
-				ex.printStackTrace();
-			}
-		}
-		needNewTree = false;
-		System.out.println(memberTree.display());
-	}*/
-	
+    public void makeMemberTree(){
+        if(needNewTree){
+            memberTree = new BTree();
+            try{
+                File file = new File("Debators.txt");
+                BufferedReader br = new BufferedReader(new FileReader(file));
+
+                String st;
+                numOfMembers=0;
+                while ((st = br.readLine()) != null){
+                    Member m = new Member(st);
+                    memberTree.add(m);
+                    numOfMembers++;
+                    //System.out.println(m.getName());
+                }
+            }
+            catch(IOException ex){
+                ex.printStackTrace();
+            }
+        }
+        needNewTree = false;
+        System.out.println(memberTree.countLeaves());
+        System.out.println(memberTree.display(1));
+    }
+
+    public BTree getMemberTree(){
+	    return memberTree;
+    }
 	@Override
 	public void mouseClicked(MouseEvent e) {
 	}
@@ -297,30 +303,64 @@ class StartPanel extends JPanel implements MouseListener{
 class AddBallotPanel extends JPanel implements MouseListener{
 
 	private JButton[] buttons;
-	private JComboBox enter_name;
+	private BTree memberTree;
+	private JComboBox member1;
+	private JComboBox member2;
 	private String[] sample_names = {"Rahma","Jenny","Adam","Vinh","Albert","Zak","Poonam","Georgia"}; //replace with list of member names
-/*
-	private JLabel member1 = new JLabel("Member 1:");
-	private JTextField member_Name1 = new JTextField(20);
+    private String[] allMembers;
 
+    private String member1Name,member2Name;
+
+    /*
+	private JLabel member1 = new JLabel("Member 1:");
 	private JLabel member2 = new JLabel("Member 2:");*/
 
 
 	public AddBallotPanel(JButton[] buttons) {
-
 		//JButtons
 		this.buttons = buttons;
 		for (JButton b : buttons) {
 			add(b);
 		}
 
-		//JComboBox to enter names
-		enter_name = new JComboBox(sample_names);
-		enter_name.setEditable(true);
-		enter_name.addMouseListener(this);
-		add(enter_name);
+    }
+
+    public void setMemberTree(BTree m){
+        memberTree = m;
+    }
+
+    public void updateBoxes(){
+		System.out.println("Hey there!");
+		//make String[] of all names in alphabetical order
+		allMembers = memberTree.toStringArray();
+        //JComboBoxes to enter names
+        member1 = new JComboBox(allMembers);
+		member1.setEditable(true);
+		// get the combo box' editor component
+		JTextComponent editor1 = (JTextComponent) member1.getEditor().getEditorComponent();
+		// change the editor's document to our BadDocument
+		editor1.setDocument(new S01BadDocument(member1));
+		member1.addMouseListener(this);
+		add(member1);
+
+        member2 = new JComboBox(allMembers);
+		member2.setEditable(true);
+		// get the combo box' editor component
+		JTextComponent editor2 = (JTextComponent) member2.getEditor().getEditorComponent();
+		// change the editor's document to our BadDocument
+		editor2.setDocument(new S01BadDocument(member2));
+		member2.addMouseListener(this);
+		add(member2);
+    }
+
+    public void comfirmNames(){
+		member1Name = member1.getSelectedItem().toString();
+		member2Name = member2.getSelectedItem().toString();
+		Ballot b = new Ballot(memberTree.findName(member1Name).getMember(),memberTree.findName(member2Name).getMember());
+		//TODO: now store them in a tin or something...
 	}
-	
+
+
 	@Override
 	public void mouseClicked(MouseEvent e) {
 	}
@@ -508,7 +548,6 @@ class AddMemberPanel extends JPanel implements MouseListener,ActionListener{
 
 		//JTextField
 		nameField = new JTextField(20);
-		nameField.addMouseListener(this);
 		nameField.addActionListener(this);
 		add(nameField);
 
@@ -577,9 +616,7 @@ class AddMemberPanel extends JPanel implements MouseListener,ActionListener{
 
 	//returns true if all information has been entered
 	public boolean canConfirm(){
-		System.out.println("hey");
 		if(name!=null && grade!=0){ //make sure these have been filled in
-				System.out.println("hello?");
 				writeToFile();
 				return true;
 		}
@@ -610,17 +647,12 @@ class AddMemberPanel extends JPanel implements MouseListener,ActionListener{
 	//graphics
 	public void paintComponent(Graphics g) {
 		super.paintComponent(g);
-		
 		newAvatar.draw(g);
 	}
 
 	@Override
 	public void mouseClicked(MouseEvent e) {
 		Object source = e.getSource();
-		//for page navigation
-		if (source == buttons[0]) {}
-		if (source == buttons[1]) {}
-		
 		//for Member creation
 		//gender
 		if (source == gender_buttons[0]) { //male
@@ -673,7 +705,7 @@ class AddMemberPanel extends JPanel implements MouseListener,ActionListener{
 	
 	@Override
 	public void actionPerformed(ActionEvent e) {
-		System.out.println("hey there beautiful");
+		//System.out.println("hey there beautiful");
 		name = nameField.getText();
 		fixName(); //make the name correct for txt and display the name
 

@@ -28,7 +28,9 @@ class BTree{
     public void add(Member v, BNode branch){
         //base case: there is an open spot in the correct position
         //val is added to the left if it is smaller than its parent or is added to the right if it is larger
-        if(v.hashCode()<branch.getHashCode()){
+        /*System.out.println(v.getName()+" compared to the branch with "+branch.getName());
+        System.out.println(v.getName().compareTo(branch.getName()));*/
+        if(v.getName().compareTo(branch.getName())<0){
             if(branch.getLeft() == null){
                 branch.setLeft(new BNode(v));
             }
@@ -36,7 +38,7 @@ class BTree{
                 add(v, branch.getLeft());
             }
         }
-        else if(v.hashCode()>branch.getHashCode()){
+        else if(v.getName().compareTo(branch.getName())>0){
             if(branch.getRight() == null){
                 branch.setRight(new BNode(v));
             }
@@ -44,6 +46,8 @@ class BTree{
                 add(v, branch.getRight());
             }
         }
+        //System.out.println(display(1)+"\n");
+
     }
 
 
@@ -62,6 +66,19 @@ class BTree{
         }
     }
 
+    public String[] toStringArray(){
+        String[] allVals = toString().split(" ");
+        String[] fullNames = new String[allVals.length/2];
+        //the first and last name are separated as strings in allVals
+        //so this loop's purpose to put them together
+        for(int i = 0; i<allVals.length;i+=2){
+            fullNames[i/2] = allVals[i]+" "+allVals[i+1];
+        }
+        return fullNames;
+    }
+
+
+
     //find returns a BNode of a certain value
     public BNode find(Member v){
         return find(v,root);
@@ -70,12 +87,12 @@ class BTree{
     //recursive overload of find
     private BNode find(Member val,BNode branch){
         //base case: if a null BNode is hit (the value isn't found) or the value is found
-        if(branch == null || branch.getHashCode() == val.hashCode()){
+        if(branch == null || val.getName().compareTo(branch.getName())==0){
             return branch;
         }
         //if not base case, continue to go down BTree to find the value
         else{
-            if(val.hashCode()<branch.getHashCode()){
+            if(val.getName().compareTo(branch.getName())<0){
                 return find(val, branch.getLeft());
             }
             else{
@@ -84,6 +101,24 @@ class BTree{
         }
     }
 
+    //to look for a member by name
+    public BNode findName(String name){return findName(name,root);}
+
+    private BNode findName(String name, BNode branch){
+        //base case: if a null BNode is hit (the value isn't found) or the value is found
+        if(branch == null || name.compareTo(branch.getName())==0){
+            return branch;
+        }
+        //if not base case, continue to go down BTree to find the value
+        else{
+            if(name.compareTo(branch.getName())<0){
+                return findName(name, branch.getLeft());
+            }
+            else{
+                return findName(name, branch.getRight());
+            }
+        }
+    }
 /*
     //returns the number of BNodes down a value is
     public int depth(String n){
@@ -206,13 +241,13 @@ class BTree{
     //returns true if a value a is the ancestor of value b
     //returns false otherwise
     public boolean isAncestor(Member a, Member d){
-        return find(d,find(a)) != null? true: false;
+        return find(d, find(a)) != null;
     }
 
     //adds a BNode, branch, onto a branch, trunk
     public void graft(BNode branch, BNode trunk){
         //base case: the branch's value fits into a null spot on the trunk
-        if(branch.getHashCode()<trunk.getHashCode()){
+        if(branch.getName().compareTo(trunk.getName())<0){
             if(trunk.getLeft() == null){
                 trunk.setLeft(branch);
             }
@@ -221,7 +256,7 @@ class BTree{
             }
         }
         //if not the base case: go down the trunk to find a spot for branch
-        else if(branch.getHashCode()>trunk.getHashCode()){
+        else if(branch.getName().compareTo(trunk.getName())>0){
             if(trunk.getRight() == null){
                 trunk.setRight(branch);
             }
@@ -238,15 +273,15 @@ class BTree{
     //recursive overload of findBefore
     public BNode findBefore(Member v, BNode branch){
         //base case: find the BNode that points to a BNode with the value v
-        if(branch.getLeft() != null && branch.getLeft().getHashCode() == v.hashCode()){
+        if(branch.getLeft() != null && branch.getLeft().getName().compareTo(v.getName())==0){
             return branch;
         }
-        if(branch.getRight() != null && branch.getRight().getHashCode() == v.hashCode()){
+        if(branch.getRight() != null && branch.getRight().getName().compareTo(v.getName())==0){
             return branch;
         }
         //if not the base case: goes down the BTree to find a Bnode that is base case
         else{
-            if(v.hashCode()>branch.getHashCode()){
+            if(v.getName().compareTo(branch.getName())>0){
                 return findBefore(v,branch.getRight());
             }
             return findBefore(v,branch.getLeft());
@@ -264,7 +299,7 @@ class BTree{
         else if(dead.getLeft() == null && dead.getRight() == null){
             BNode parent = findBefore(n); //the BNode that points to dead
             boolean onRight = true;//true if the parent points to dead on the right
-            if(dead.getHashCode()<parent.getHashCode()){
+            if(dead.getName().compareTo(parent.getName())<0){
                 onRight = false;
             }
 
@@ -280,7 +315,7 @@ class BTree{
         else{
             BNode parent = findBefore(n);//the BNode that points to dead
             boolean onRight = true; //true if the parent points to dead on the right
-            if(dead.getHashCode()<parent.getHashCode()){
+            if(dead.getName().compareTo(parent.getName())>0){
                 onRight = false;
             }
             if(dead.getRight()!= null && dead.getLeft()!= null){

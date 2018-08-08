@@ -17,9 +17,9 @@ class BNode{
         return m.getName();
     }
 
-    public int getHashCode(){
+    /*public int getNameValue(){
         return m.getName().hashCode();
-    }
+    }*/
 
     public BNode getLeft(){
         return left;
