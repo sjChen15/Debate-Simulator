@@ -21,9 +21,8 @@ public class Member {
     private int debatesLost; //number of debates lost
     private int timesGov; //number of government debates
     private int timesOp; //number of opposition debates
-    private int rank; //rank of each individual member
+    private double rank; //rank of each individual member
     private int gender, skin;
-    //TODO: make an int of total number of members so we know how many times to loop through
     //TODO: make flag for alternating debates: one week of senior v junior next week junior v junior
     //TODO: average the partner ranks sort the teams debating and then do the half and half thing
     //TODO: delete member after 8 weeks inactive, make a warning like "these people bout to be deleted"
@@ -70,7 +69,13 @@ public class Member {
         return splitName;
     }
 
-    public int getRank(){
+    public double getRank(){
+        rank = 0;
+        if(senior){
+            rank+=10;
+        }
+        rank+=debatesWon;
+        rank+=debatesLost/2;
         return rank;
     }
 }

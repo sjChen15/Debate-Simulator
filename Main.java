@@ -48,15 +48,15 @@ public class Main extends JFrame implements ActionListener{
 	private CardLayout cLayout = new CardLayout();
 
 	//JButtons
-	private JButton[][] buttons = {{new ScalingButton("Start"),new ScalingButton("Members")},{new JButton("Add Ballot"), new JButton("Shake Tin"), new JButton("Menu")},
+	private JButton[][] buttons = {{new JButton("Confirm"),new JButton("Skip")},{new ScalingButton("Start"),new ScalingButton("Members")},{new JButton("Add Ballot"), new JButton("Shake Tin"), new JButton("Menu")},
 			{new JButton("Add Member"),new JButton("Menu")},{new JButton("Confirm"), new JButton("Back")},
 			{new JButton("Confirm"), new JButton("Back")},{new JButton("Next")},
 			{new JButton("Menu")}};
 
-	private String[] panelKey = {"menu","start","members","addBallot","addMember","shakeTin","debates"};
+	private String[] panelKey = {"date","menu","start","members","addBallot","addMember","shakeTin","debates"};
 	//JPanels
-	private JPanel[] panels = {new MenuPanel(buttons[0]),new StartPanel(buttons[1]), new MembersPanel(buttons[2]), new AddBallotPanel(buttons[3]), new AddMemberPanel(buttons[4]),
-			new ShakeTinPanel(buttons[5]), new DebatesPanel(buttons[6])}; //construct panels with buttons
+	private JPanel[] panels = {new DatePanel(buttons[0]),new MenuPanel(buttons[1]),new StartPanel(buttons[2]), new MembersPanel(buttons[3]), new AddBallotPanel(buttons[4]), new AddMemberPanel(buttons[5]),
+			new ShakeTinPanel(buttons[6]), new DebatesPanel(buttons[7])}; //construct panels with buttons
 
 	public Main() {
 		super("Debate Simulator");
@@ -87,59 +87,68 @@ public class Main extends JFrame implements ActionListener{
 	@Override
 	public void actionPerformed(ActionEvent e) {
 		repaint(); //graphics
-
 		Object source = e.getSource();
+		//DatePanel
+		if(source == buttons[0][0]){//Confirm button
+			if(((DatePanel)panels[0]).canConfirm()){ //confirm all parameteres have been filled in
+				((DatePanel)panels[0]).writeToFile(); //write the date to the file
+				cLayout.show(cards,"menu");
+			}
+		}
+		else if(source == buttons[0][1]){ //Skip button
+			cLayout.show(cards,"menu");
+		}
 		//MenuPanel
-		if (source == buttons[0][0]) { //Start button
-			((StartPanel)panels[1]).makeMemberTree();
+		else if (source == buttons[1][0]) { //Start button
+			((StartPanel)panels[2]).makeMemberTree();
 			cLayout.show(cards, "start");
 		}
-		else if (source == buttons[0][1]) { //Members button
+		else if (source == buttons[1][1]) { //Members button
 			cLayout.show(cards, "members");
 		}
 		//StartPanel
-		else if (source == buttons[1][0]) { //Add Ballot button
-            ((AddBallotPanel)panels[3]).setMemberTree(((StartPanel)panels[1]).getMemberTree());
-            ((AddBallotPanel)panels[3]).updateBoxes();
+		else if (source == buttons[2][0]) { //Add Ballot button
+            ((AddBallotPanel)panels[4]).setMemberTree(((StartPanel)panels[1]).getMemberTree());
+            ((AddBallotPanel)panels[4]).updateBoxes();
 			cLayout.show(cards, "addBallot");
 		}
-		else if (source == buttons[1][1]) { //Shake Tin button
+		else if (source == buttons[2][1]) { //Shake Tin button
 			cLayout.show(cards, "shakeTin");
 		}
-		else if (source == buttons[1][2]) { //Menu button
-			cLayout.first(cards);
+		else if (source == buttons[2][2]) { //Menu button
+			cLayout.show(cards,"menu");
 		}
 		//MembersPanel
-		else if (source == buttons[2][0]) { //Add Member button
+		else if (source == buttons[3][0]) { //Add Member button
 			cLayout.show(cards, "addMember");
 		}
-		else if (source == buttons[2][1]) { //Menu button
-			cLayout.first(cards);
+		else if (source == buttons[3][1]) { //Menu button
+			cLayout.show(cards,"menu");
 		}
 		//AddBallotPanel
-		else if (source == buttons[3][0]) { //Confirm button
+		else if (source == buttons[4][0]) { //Confirm button
 			cLayout.show(cards, "start");
-
+			((AddBallotPanel)panels[4]).confirmNames();
 		}
-		else if (source == buttons[3][1]) { //Back button
+		else if (source == buttons[4][1]) { //Back button
 			cLayout.show(cards, "start");
 		}
 		//AddMemberPanel
-		else if (source == buttons[4][0]) { //Confirm button
-			if(((AddMemberPanel)panels[4]).canConfirm()) {
+		else if (source == buttons[5][0]) { //Confirm button
+			if(((AddMemberPanel)panels[5]).canConfirm()) {
 				cLayout.show(cards, "members");
 			}
 		}
-		else if (source == buttons[4][1]) { //Back button
+		else if (source == buttons[5][1]) { //Back button
 			cLayout.show(cards, "members");
 		}
 		//ShakeTinPanel
-		else if (source == buttons[5][0]) { //Next button
+		else if (source == buttons[6][0]) { //Next button
 			cLayout.show(cards, "debates");
 		}
 		//DebatesPanel
-		else if (source == buttons[6][0]) { //Menu button
-			cLayout.first(cards);
+		else if (source == buttons[7][0]) { //Menu button
+			cLayout.show(cards,"menu");
 		}
 	}
 	
@@ -149,6 +158,98 @@ public class Main extends JFrame implements ActionListener{
 	
 }
 
+class DatePanel extends JPanel implements MouseListener{
+	private JButton[] buttons;
+	private JLabel directions1 = new JLabel("Enter the date if it is an official debate meeting or if it has not been entered in another run.");
+	private JLabel directions2 = new JLabel("Things like matchmaking and member deletion is dependant on the number of dates entered so please be careful.");
+	private JLabel dayLabel = new JLabel("Day");
+	private JLabel monthLabel = new JLabel("Month");
+	private JLabel yearLabel = new JLabel("Year");
+
+	private JComboBox day,month,year;	//to select the date of the meeting
+	private String[] dayNums = new String[31]; //the string arrays with their respective JComboBoxes
+	private String[] monthNums = new String[12];
+	private String[] yearNums = new String[33];
+
+	public DatePanel(JButton[] buttons){
+		//JButtons
+		this.buttons = buttons;
+		for (JButton b : buttons) {
+			add(b);
+		}
+		//add the JLabels
+		add(directions1);
+		add(directions2);
+
+		add(dayLabel);
+		//fill dayNums with string "1" to "31"
+		for(int i = 0; i<31; i++){
+			dayNums[i] = ""+(i+1);
+		}
+		day = new JComboBox(dayNums);
+		day.addMouseListener(this);
+		add(day);
+
+		add(monthLabel);
+		//fill monthNums with string "1" to "12"
+		for(int i = 0; i<12;i++){
+			monthNums[i] = ""+(i+1);
+		}
+		month = new JComboBox(monthNums);
+		month.addMouseListener(this);
+		add(month);
+
+		add(yearLabel);
+		//fill monthNums with string "2018" to "2050"
+		for(int i = 0; i<33; i++){
+			yearNums[i] = ""+(i+2018);
+		}
+		year = new JComboBox(yearNums);
+		year.addMouseListener(this);
+		add(year);
+	}
+
+	//checks if all boxes have been filled in
+	public boolean canConfirm(){
+		if(day.getItemCount()!=0 && month.getItemCount()!=0 && year.getItemCount()!=0){
+			return true;
+		}
+		return false;
+	}
+
+	//writes the date to the "Weeks.txt" file
+	//stores dates in form "day month year"
+	//e.g. 17 10 2018
+	public void writeToFile(){
+		String txtFileInfo = day.getSelectedItem()+" "+month.getSelectedItem()+" "+year.getSelectedItem(); //the string that will be written into the txt file
+
+		try {
+			BufferedWriter writer = new BufferedWriter(new FileWriter("Weeks.txt",true));
+			writer.write(txtFileInfo);
+			writer.newLine();
+			writer.close();
+		}
+		catch(IOException ex){
+			ex.printStackTrace();
+		}
+	}
+
+	@Override
+	public void mouseClicked(MouseEvent e) {
+	}
+	@Override
+	public void mousePressed(MouseEvent e) {
+	}
+	@Override
+	public void mouseReleased(MouseEvent e) {
+	}
+	@Override
+	public void mouseEntered(MouseEvent e) {
+	}
+	@Override
+	public void mouseExited(MouseEvent e) {
+	}
+}
 class MenuPanel extends JPanel implements MouseListener{
 
 	private Font font;
@@ -301,7 +402,6 @@ class StartPanel extends JPanel implements MouseListener{
 }
 
 class AddBallotPanel extends JPanel implements MouseListener{
-
 	private JButton[] buttons;
 	private BTree memberTree;
 	private JComboBox member1;
@@ -353,7 +453,7 @@ class AddBallotPanel extends JPanel implements MouseListener{
 		add(member2);
     }
 
-    public void comfirmNames(){
+    public void confirmNames(){
 		member1Name = member1.getSelectedItem().toString();
 		member2Name = member2.getSelectedItem().toString();
 		Ballot b = new Ballot(memberTree.findName(member1Name).getMember(),memberTree.findName(member2Name).getMember());

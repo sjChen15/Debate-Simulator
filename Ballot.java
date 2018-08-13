@@ -18,7 +18,7 @@ public class Ballot {
     }
 
     //returns the average ranking of the ballot
-    public int getRank(){
+    public double getRank(){
         return (debator1.getRank()+debator2.getRank())/2;
     }
 }
