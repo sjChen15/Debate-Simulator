@@ -1,44 +1,25 @@
-import java.awt.BorderLayout;
 import java.awt.CardLayout;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.FontFormatException;
-import java.awt.FontMetrics;
 import java.awt.Graphics;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
 import java.awt.Image;
-import java.awt.Insets;
 import java.awt.Point;
-import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.ComponentEvent;
-import java.awt.event.ComponentListener;
-import java.awt.event.FocusEvent;
-import java.awt.event.FocusListener;
-import java.awt.event.KeyAdapter;
-import java.awt.event.KeyEvent;
-import java.awt.event.KeyListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.io.*;
 
 import javax.imageio.ImageIO;
-import javax.swing.BoxLayout;
-import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
-import javax.swing.JComponent;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
-import javax.swing.JRootPane;
-import javax.swing.JSplitPane;
 import javax.swing.JTextField;
 import javax.swing.SwingConstants;
-import javax.swing.Timer;
 import javax.swing.text.JTextComponent;
 
 public class Main extends JFrame implements ActionListener{
@@ -48,19 +29,21 @@ public class Main extends JFrame implements ActionListener{
 	private CardLayout cLayout = new CardLayout();
 
 	//JButtons
-	private JButton[][] buttons = {{new JButton("Confirm"),new JButton("Skip")},{new JButton("Start"),new JButton("Members")},{new JButton("Add Ballot"), new JButton("Shake Tin"), new JButton("Menu")},
+	private JButton[][] buttons = {{new JButton("Start"),new JButton("Members")},{new JButton("Add Ballot"), new JButton("Shake Tin"), new JButton("Menu")},
+			{new JButton("Confirm"),new JButton("Skip")},
 			{new JButton("Add Member"),new JButton("Menu")},{new JButton("Confirm"), new JButton("Back")},
 			{new JButton("Confirm"), new JButton("Back")},{new JButton("Next")},
 			{new JButton("Menu")}};
 
-	private String[] panelKey = {"date","menu","start","members","addBallot","addMember","shakeTin","debates"};
+	private String[] panelKey = {"menu","start","date","members","addBallot","addMember","shakeTin","debates"};
 	//JPanels
-	private JPanel[] panels = {new DatePanel(buttons[0]),new MenuPanel(buttons[1]),new StartPanel(buttons[2]), new MembersPanel(buttons[3]), new AddBallotPanel(buttons[4]), new AddMemberPanel(buttons[5]),
+	private JPanel[] panels = {new MenuPanel(buttons[0]),new StartPanel(buttons[1]), new DatePanel(buttons[2]), new MembersPanel(buttons[3]), new AddBallotPanel(buttons[4]), new AddMemberPanel(buttons[5]),
 			new ShakeTinPanel(buttons[6]), new DebatesPanel(buttons[7])}; //construct panels with buttons
 
 	public Main() {
 		super("Debate Simulator");
 		setSize(new Dimension(1200,800)); //constant size
+		setResizable(false); 
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
 		//add buttons to corresponding panels
@@ -73,6 +56,7 @@ public class Main extends JFrame implements ActionListener{
 		//CardLayout
 		cards = new JPanel(cLayout);
 		for (int i = 0; i < panels.length; i++) {
+			panels[i].setSize(new Dimension(1200,800)); //constant size
 			cards.add(panels[i],panelKey[i]);
 		}
 		getContentPane().add(cards);
@@ -88,35 +72,36 @@ public class Main extends JFrame implements ActionListener{
 	public void actionPerformed(ActionEvent e) {
 		repaint(); //graphics
 		Object source = e.getSource();
-		//DatePanel
-		if(source == buttons[0][0]){//Confirm button
-			if(((DatePanel)panels[0]).canConfirm()){ //confirm all parameteres have been filled in
-				((DatePanel)panels[0]).writeToFile(); //write the date to the file
-				cLayout.show(cards,"menu");
-			}
-		}
-		else if(source == buttons[0][1]){ //Skip button
-			cLayout.show(cards,"menu");
-		}
+		
 		//MenuPanel
-		else if (source == buttons[1][0]) { //Start button
-			((StartPanel)panels[2]).makeMemberTree();
-			cLayout.show(cards, "start");
+		if (source == buttons[0][0]) { //Start button
+			((StartPanel)panels[1]).makeMemberTree();
+			cLayout.show(cards, "date");
 		}
-		else if (source == buttons[1][1]) { //Members button
+		else if (source == buttons[0][1]) { //Members button
 			cLayout.show(cards, "members");
 		}
 		//StartPanel
-		else if (source == buttons[2][0]) { //Add Ballot button
+		else if (source == buttons[1][0]) { //Add Ballot button
             ((AddBallotPanel)panels[4]).setMemberTree(((StartPanel)panels[1]).getMemberTree());
             ((AddBallotPanel)panels[4]).updateBoxes();
 			cLayout.show(cards, "addBallot");
 		}
-		else if (source == buttons[2][1]) { //Shake Tin button
+		else if (source == buttons[1][1]) { //Shake Tin button
 			cLayout.show(cards, "shakeTin");
 		}
-		else if (source == buttons[2][2]) { //Menu button
+		else if (source == buttons[1][2]) { //Menu button
 			cLayout.show(cards,"menu");
+		}
+		//DatePanel
+		if(source == buttons[2][0]){//Confirm button
+			if(((DatePanel)panels[2]).canConfirm()){ //confirm all parameters have been filled in
+				((DatePanel)panels[2]).writeToFile(); //write the date to the file
+				cLayout.show(cards,"start");
+			}
+		}
+		else if(source == buttons[2][1]){ //Skip button
+			cLayout.show(cards,"start");
 		}
 		//MembersPanel
 		else if (source == buttons[3][0]) { //Add Member button
@@ -156,6 +141,168 @@ public class Main extends JFrame implements ActionListener{
 		Main frame = new Main();
 	}
 	
+}
+
+
+class MenuPanel extends JPanel implements MouseListener{
+
+	//private Font font;
+	private Image podium;
+	private JLabel[] labels = {new JLabel("Vincent Massey Secondary School",SwingConstants.CENTER),new JLabel("Debate Club",SwingConstants.CENTER)};
+	private JButton[] buttons = {new JButton("Start"),new JButton("Members")}; //initially avoid null pointer
+	
+	public MenuPanel(JButton[] buttons) {
+		
+		this.buttons = buttons;
+		
+		//Formatting
+		setLayout(null);
+		//load files
+		try {
+			//font = Font.createFont(Font.TRUETYPE_FONT, new File("MenuFiles/Roboto-Regular.ttf")).deriveFont(Font.PLAIN, 100);
+			podium = ImageIO.read(new File("MenuFiles/podium.png")).getScaledInstance(1200,400,Image.SCALE_DEFAULT); 
+		} catch (IOException e) {	e.printStackTrace();}
+		
+		//background
+		setBackground(new Color(128,0,0)); //marroon
+		
+		//JLabels
+		for (JLabel l : labels) {
+			l.addMouseListener(this);
+			l.setForeground(Color.WHITE);
+		}
+		//Vincent Massey Secondary School
+		labels[0].setFont(new Font("Times New Roman", Font.PLAIN, 30));
+		labels[0].setSize(new Dimension(1200,40));
+		labels[0].setLocation(new Point(0,70));
+		add(labels[0]);
+		//Debate Club
+		labels[1].setFont(new Font("Times New Roman", Font.BOLD, 100));
+		labels[1].setSize(new Dimension(1200,180));
+		labels[1].setLocation(new Point(0,90));
+		add(labels[1]);
+		
+		//JButtons
+		for (JButton b  : buttons) {
+			b.addMouseListener(this);
+			b.setSize(new Dimension(300,100));
+			b.setFont(new Font("Times New Roman", Font.BOLD, 48));
+			
+			b.setBackground(new Color(0,0,0,0));
+			b.setForeground(Color.WHITE);
+			b.setBorderPainted(false);
+			b.setContentAreaFilled(false);
+			b.setFocusPainted(false);
+		}
+		//Start
+		buttons[0].setLocation(new Point(50,400));
+		add(buttons[0]);
+		//Members
+		buttons[1].setLocation(new Point(850,400));
+		add(buttons[1]);
+	}
+
+	//graphics
+	public void paintComponent(Graphics g) {
+		super.paintComponent(g);
+		g.drawImage(podium,0,400,null);
+	}
+
+	//mouse listener methods
+	@Override
+	public void mouseClicked(MouseEvent e) {
+	}
+	@Override
+	public void mouseEntered(MouseEvent e) {
+		Object source = e.getSource();
+		//Formatting
+		if (source == buttons[0]) {
+			buttons[0].setForeground(Color.BLACK);
+		}
+		else if (source == buttons[1]) {
+			buttons[1].setForeground(Color.BLACK);
+		}
+	}
+	@Override
+	public void mouseExited(MouseEvent e) {
+		Object source = e.getSource();
+		//Formatting
+		if (source == buttons[0]) {
+			buttons[0].setForeground(Color.WHITE);
+		}
+		else if (source == buttons[1]) {
+			buttons[1].setForeground(Color.WHITE);
+		}
+	}
+	@Override
+	public void mousePressed(MouseEvent arg0) {
+	}
+	@Override
+	public void mouseReleased(MouseEvent arg0) {
+	}
+
+}
+
+class StartPanel extends JPanel implements MouseListener{
+	private BTree memberTree;
+	private int numOfMembers; //the number of members in the tree
+	private boolean needNewTree = true; //is true if user has just start program or has went back to menu from the start page
+
+	private JButton[] buttons;
+
+	public StartPanel(JButton[] buttons) {
+
+		//buttons
+		this.buttons = buttons;
+		for (JButton b : buttons) {
+			add(b);
+		}
+
+	}
+
+    public void makeMemberTree(){
+        if(needNewTree){
+            memberTree = new BTree();
+            try{
+                File file = new File("Debators.txt");
+                BufferedReader br = new BufferedReader(new FileReader(file));
+
+                String st;
+                numOfMembers=0;
+                while ((st = br.readLine()) != null){
+                    Member m = new Member(st);
+                    memberTree.add(m);
+                    numOfMembers++;
+                    //System.out.println(m.getName());
+                }
+            }
+            catch(IOException ex){
+                ex.printStackTrace();
+            }
+        }
+        needNewTree = false;
+        System.out.println(memberTree.countLeaves());
+        System.out.println(memberTree.display(1));
+    }
+
+    public BTree getMemberTree(){
+	    return memberTree;
+    }
+	@Override
+	public void mouseClicked(MouseEvent e) {
+	}
+	@Override
+	public void mouseEntered(MouseEvent arg0) {
+	}
+	@Override
+	public void mouseExited(MouseEvent arg0) {		
+	}
+	@Override
+	public void mousePressed(MouseEvent arg0) {
+	}
+	@Override
+	public void mouseReleased(MouseEvent arg0) {	
+	}
 }
 
 class DatePanel extends JPanel implements MouseListener{
@@ -248,111 +395,6 @@ class DatePanel extends JPanel implements MouseListener{
 	}
 	@Override
 	public void mouseExited(MouseEvent e) {
-	}
-}
-class MenuPanel extends JPanel implements MouseListener{
-
-	private Font font;
-	private JLabel[] labels = {new JLabel("Vincent Massey Secondary School"),new JLabel("Debate Simulator")};
-	private JButton[] buttons;
-	
-	public MenuPanel(JButton[] buttons) {
-		//load files
-		try {
-			font = Font.createFont(Font.TRUETYPE_FONT, new File("MenuFiles/Roboto-Regular.ttf")).deriveFont(Font.PLAIN, 100);
-		} catch (FontFormatException | IOException e) {	e.printStackTrace();}
-
-		for (JLabel l : labels) {
-			add(l);
-		}
-		for (JButton b  : buttons) {
-			add(b);
-		}
-	}
-
-	//graphics
-	public void paintComponent(Graphics g) {
-		super.paintComponent(g);
-	}
-
-	//key listener methods
-	@Override
-	public void mouseClicked(MouseEvent e) {
-	}
-	@Override
-	public void mouseEntered(MouseEvent arg0) {
-	}
-	@Override
-	public void mouseExited(MouseEvent arg0) {
-	}
-	@Override
-	public void mousePressed(MouseEvent arg0) {
-	}
-	@Override
-	public void mouseReleased(MouseEvent arg0) {
-	}
-
-}
-
-class StartPanel extends JPanel implements MouseListener{
-	private BTree memberTree;
-	private int numOfMembers; //the number of members in the tree
-	private boolean needNewTree = true; //is true if user has just start program or has went back to menu from the start page
-
-	private JButton[] buttons;
-
-	public StartPanel(JButton[] buttons) {
-
-		//buttons
-		this.buttons = buttons;
-		for (JButton b : buttons) {
-			add(b);
-		}
-
-	}
-
-    public void makeMemberTree(){
-        if(needNewTree){
-            memberTree = new BTree();
-            try{
-                File file = new File("Debators.txt");
-                BufferedReader br = new BufferedReader(new FileReader(file));
-
-                String st;
-                numOfMembers=0;
-                while ((st = br.readLine()) != null){
-                    Member m = new Member(st);
-                    memberTree.add(m);
-                    numOfMembers++;
-                    //System.out.println(m.getName());
-                }
-            }
-            catch(IOException ex){
-                ex.printStackTrace();
-            }
-        }
-        needNewTree = false;
-        System.out.println(memberTree.countLeaves());
-        System.out.println(memberTree.display(1));
-    }
-
-    public BTree getMemberTree(){
-	    return memberTree;
-    }
-	@Override
-	public void mouseClicked(MouseEvent e) {
-	}
-	@Override
-	public void mouseEntered(MouseEvent arg0) {
-	}
-	@Override
-	public void mouseExited(MouseEvent arg0) {		
-	}
-	@Override
-	public void mousePressed(MouseEvent arg0) {
-	}
-	@Override
-	public void mouseReleased(MouseEvent arg0) {	
 	}
 }
 
@@ -630,7 +672,7 @@ class AddMemberPanel extends JPanel implements MouseListener,ActionListener{
 
 	}
 
-	//formmat the name in the textbox so it is in the correct format for the txt file
+	//format the name in the textbox so it is in the correct format for the txt file
 	//also the name is formatted and displayed
 	public void fixName(){
 		if(name.indexOf(" ")!=-1 && name.indexOf(" ")!= name.length()-1){ //make sure the name has a space before formmating
@@ -749,7 +791,8 @@ class AddMemberPanel extends JPanel implements MouseListener,ActionListener{
 	public void mouseEntered(MouseEvent arg0) {
 	}
 	@Override
-	public void mouseExited(MouseEvent arg0) {		
+	public void mouseExited(MouseEvent e) {	
+		
 	}
 	@Override
 	public void mousePressed(MouseEvent arg0) {
