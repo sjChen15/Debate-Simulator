@@ -48,7 +48,7 @@ public class Main extends JFrame implements ActionListener{
 	private CardLayout cLayout = new CardLayout();
 
 	//JButtons
-	private JButton[][] buttons = {{new JButton("Confirm"),new JButton("Skip")},{new ScalingButton("Start"),new ScalingButton("Members")},{new JButton("Add Ballot"), new JButton("Shake Tin"), new JButton("Menu")},
+	private JButton[][] buttons = {{new JButton("Confirm"),new JButton("Skip")},{new JButton("Start"),new JButton("Members")},{new JButton("Add Ballot"), new JButton("Shake Tin"), new JButton("Menu")},
 			{new JButton("Add Member"),new JButton("Menu")},{new JButton("Confirm"), new JButton("Back")},
 			{new JButton("Confirm"), new JButton("Back")},{new JButton("Next")},
 			{new JButton("Menu")}};
@@ -60,7 +60,7 @@ public class Main extends JFrame implements ActionListener{
 
 	public Main() {
 		super("Debate Simulator");
-		setSize(Toolkit.getDefaultToolkit().getScreenSize()); //set the size of the screen = to the monitor size
+		setSize(new Dimension(1200,800)); //constant size
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
 		//add buttons to corresponding panels
@@ -253,7 +253,7 @@ class DatePanel extends JPanel implements MouseListener{
 class MenuPanel extends JPanel implements MouseListener{
 
 	private Font font;
-	private JLabel[] labels = {new ScalingLabel("Vincent Massey Secondary School"),new ScalingLabel("Debate Simulator")};
+	private JLabel[] labels = {new JLabel("Vincent Massey Secondary School"),new JLabel("Debate Simulator")};
 	private JButton[] buttons;
 	
 	public MenuPanel(JButton[] buttons) {
@@ -262,57 +262,12 @@ class MenuPanel extends JPanel implements MouseListener{
 			font = Font.createFont(Font.TRUETYPE_FONT, new File("MenuFiles/Roboto-Regular.ttf")).deriveFont(Font.PLAIN, 100);
 		} catch (FontFormatException | IOException e) {	e.printStackTrace();}
 
-		//Layout
-		setLayout(new GridBagLayout());
-		GridBagConstraints c = new GridBagConstraints();
-
-		//JLabels
-		c.gridx = 0;
-		c.gridy = 0;
-		c.gridwidth = 3;
-		c.weightx = 0.3;
-		c.weighty = 0.3;
-		c.anchor = GridBagConstraints.CENTER;
-		c.fill = GridBagConstraints.BOTH;
-		labels[0].setFont(font);
-		labels[0].setVerticalAlignment(SwingConstants.BOTTOM);
-		add(labels[0],c);
-
-		c.gridx = 0;
-		c.gridy = 1;
-		c.gridwidth = 3;
-		c.weightx = 0.4;
-		c.weighty = 0.4;
-		//c.anchor = GridBagConstraints.CENTER;
-		c.fill = GridBagConstraints.BOTH;
-		labels[1].setFont(font);
-		labels[1].setVerticalAlignment(SwingConstants.TOP);
-		add(labels[1],c);
-
-		//JButtons
-		this.buttons = buttons;
-
-		c.gridx = 0;
-		c.gridy = 2;
-		c.gridwidth = 1;
-		c.weightx = 0.3;
-		c.weighty = 0.3;
-		c.insets = new Insets(20,20,20,10);
-		c.fill = GridBagConstraints.BOTH;
-		buttons[0].setFont(font);
-		//buttons[0].setBackground(new Color(0,0,0,0));
-		add(buttons[0],c);
-
-		c.gridx = 2;
-		c.gridy = 2;
-		c.gridwidth = 1;
-		c.weightx = 0.3;
-		c.weighty = 0.3;
-		c.insets = new Insets(20,10,20,20);
-		c.fill = GridBagConstraints.BOTH;
-		buttons[1].setFont(font);
-		//buttons[1].setBackground(new Color(0,0,0,0));
-		add(buttons[1],c);
+		for (JLabel l : labels) {
+			add(l);
+		}
+		for (JButton b  : buttons) {
+			add(b);
+		}
 	}
 
 	//graphics
