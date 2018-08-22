@@ -146,8 +146,10 @@ public class Main extends JFrame implements ActionListener{
 
 class MenuPanel extends JPanel implements MouseListener{
 
-	//private Font font;
 	private Image podium;
+	private Image logo;
+	private Color underline1 = Color.WHITE;
+	private Color underline2 = Color.WHITE;
 	private JLabel[] labels = {new JLabel("Vincent Massey Secondary School",SwingConstants.CENTER),new JLabel("Debate Club",SwingConstants.CENTER)};
 	private JButton[] buttons = {new JButton("Start"),new JButton("Members")}; //initially avoid null pointer
 	
@@ -159,8 +161,8 @@ class MenuPanel extends JPanel implements MouseListener{
 		setLayout(null);
 		//load files
 		try {
-			//font = Font.createFont(Font.TRUETYPE_FONT, new File("MenuFiles/Roboto-Regular.ttf")).deriveFont(Font.PLAIN, 100);
 			podium = ImageIO.read(new File("MenuFiles/podium.png")).getScaledInstance(1200,400,Image.SCALE_DEFAULT); 
+			logo = ImageIO.read(new File("MenuFiles/DebateLogo.png")).getScaledInstance(500, 500, Image.SCALE_SMOOTH);
 		} catch (IOException e) {	e.printStackTrace();}
 		
 		//background
@@ -172,6 +174,7 @@ class MenuPanel extends JPanel implements MouseListener{
 			l.setForeground(Color.WHITE);
 		}
 		//Vincent Massey Secondary School
+		labels[0].setForeground(new Color(163,99,43)); //podium's brown
 		labels[0].setFont(new Font("Times New Roman", Font.PLAIN, 30));
 		labels[0].setSize(new Dimension(1200,40));
 		labels[0].setLocation(new Point(0,70));
@@ -205,7 +208,14 @@ class MenuPanel extends JPanel implements MouseListener{
 	//graphics
 	public void paintComponent(Graphics g) {
 		super.paintComponent(g);
+		g.drawImage(logo,350, 0, null);
 		g.drawImage(podium,0,400,null);
+		
+		//button underlines
+		g.setColor(underline1);
+		g.fillRect(100, 480, 200, 5); //Start Button
+		g.setColor(underline2);
+		g.fillRect(900, 480, 200, 5); //Members Button
 	}
 
 	//mouse listener methods
@@ -217,10 +227,12 @@ class MenuPanel extends JPanel implements MouseListener{
 		Object source = e.getSource();
 		//Formatting
 		if (source == buttons[0]) {
-			buttons[0].setForeground(Color.BLACK);
+			buttons[0].setForeground(new Color(163,99,43)); //podium's brown
+			underline1 = new Color(163,99,43);
 		}
 		else if (source == buttons[1]) {
-			buttons[1].setForeground(Color.BLACK);
+			buttons[1].setForeground(new Color(163,99,43)); //podium's brown
+			underline2 = new Color(163,99,43);
 		}
 	}
 	@Override
@@ -229,9 +241,11 @@ class MenuPanel extends JPanel implements MouseListener{
 		//Formatting
 		if (source == buttons[0]) {
 			buttons[0].setForeground(Color.WHITE);
+			underline1 = Color.WHITE;
 		}
 		else if (source == buttons[1]) {
 			buttons[1].setForeground(Color.WHITE);
+			underline2 = Color.WHITE;
 		}
 	}
 	@Override
@@ -319,6 +333,12 @@ class DatePanel extends JPanel implements MouseListener{
 	private String[] yearNums = new String[33];
 
 	public DatePanel(JButton[] buttons){
+		
+		//Formatting
+		
+		//background
+		setBackground(new Color(128,0,0)); //marroon
+		
 		//JButtons
 		this.buttons = buttons;
 		for (JButton b : buttons) {
