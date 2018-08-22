@@ -30,7 +30,7 @@ public class Main extends JFrame implements ActionListener{
 
 	//JButtons
 	private JButton[][] buttons = {{new JButton("Start"),new JButton("Members")},{new JButton("Add Ballot"), new JButton("Shake Tin"), new JButton("Menu")},
-			{new JButton("Confirm"),new JButton("Skip")},
+			{new JButton("Skip"),new JButton("Confirm")},
 			{new JButton("Add Member"),new JButton("Menu")},{new JButton("Confirm"), new JButton("Back")},
 			{new JButton("Confirm"), new JButton("Back")},{new JButton("Next")},
 			{new JButton("Menu")}};
@@ -213,9 +213,9 @@ class MenuPanel extends JPanel implements MouseListener{
 		
 		//button underlines
 		g.setColor(underline1);
-		g.fillRect(100, 480, 200, 5); //Start Button
+		g.fillRect(100, 480, 200, 3); //Start Button
 		g.setColor(underline2);
-		g.fillRect(900, 480, 200, 5); //Members Button
+		g.fillRect(900, 480, 200, 3); //Members Button
 	}
 
 	//mouse listener methods
@@ -320,35 +320,107 @@ class StartPanel extends JPanel implements MouseListener{
 }
 
 class DatePanel extends JPanel implements MouseListener{
-	private JButton[] buttons;
-	private JLabel directions1 = new JLabel("Enter the date if it is an official debate meeting or if it has not been entered in another run.");
-	private JLabel directions2 = new JLabel("Things like matchmaking and member deletion is dependant on the number of dates entered so please be careful.");
-	private JLabel dayLabel = new JLabel("Day");
-	private JLabel monthLabel = new JLabel("Month");
-	private JLabel yearLabel = new JLabel("Year");
+	
+	private JButton[] buttons = {new JButton("Skip"),new JButton("Confirm")}; //initially avoid null pointer
+	private JLabel[] directions = {new JLabel("Enter the date if it is an official debate meeting and if it has not been entered today.",SwingConstants.CENTER),
+			new JLabel("Matchmaking and member deletion are dependant on the accuracy of dates entered so please be careful.",SwingConstants.CENTER)};
+	private JLabel[] labels = {new JLabel("Day"), new JLabel("Month"), new JLabel("Year")};
 
-	private JComboBox day,month,year;	//to select the date of the meeting
-	private String[] dayNums = new String[31]; //the string arrays with their respective JComboBoxes
-	private String[] monthNums = new String[12];
-	private String[] yearNums = new String[33];
-
+	//private JComboBox day,month,year;	//to select the date of the meeting
+	private String[] dayNums = numberArrayString(1,31); //the string arrays with their respective JComboBoxes
+	private String[] monthNums =  numberArrayString(1,12);
+	private String[] yearNums =  numberArrayString(2018,2050);
+	private JComboBox[] dropdowns = {new JComboBox(dayNums),new JComboBox(monthNums),new JComboBox(yearNums)};
+	
+	//method creates string array given first and last integer by an increment of 1 
+	public String[] numberArrayString(int firstInclusive, int secondInclusive) {
+		String[] stringArray = new String[secondInclusive - firstInclusive +1];
+		int counter = 0; //to iterate through array
+		for (int i = firstInclusive; i <= secondInclusive; i++) {
+			stringArray[counter] = Integer.toString(i);
+			counter++;
+		}
+		return stringArray;
+	}
+	
+	//Constructor
 	public DatePanel(JButton[] buttons){
 		
 		//Formatting
 		
-		//background
-		setBackground(new Color(128,0,0)); //marroon
+		setLayout(null);
 		
 		//JButtons
 		this.buttons = buttons;
-		for (JButton b : buttons) {
+		//Skip
+		buttons[0].setLocation(new Point(50,650));
+		buttons[0].setHorizontalAlignment(SwingConstants.LEFT);
+		//Confirm
+		buttons[1].setLocation(new Point(850,650));	
+		buttons[1].setHorizontalAlignment(SwingConstants.RIGHT);
+		//background
+		setBackground(new Color(128,0,0)); //marroon
+		for (JButton b  : buttons) {
+			b.addMouseListener(this);
+			b.setSize(new Dimension(300,100));
+			b.setFont(new Font("Times New Roman", Font.BOLD, 48));
+			
+			b.setBackground(new Color(0,0,0,0));
+			b.setForeground(Color.WHITE);
+			b.setBorderPainted(false);
+			b.setContentAreaFilled(false);
+			b.setFocusPainted(false);
+			
 			add(b);
 		}
-		//add the JLabels
-		add(directions1);
-		add(directions2);
-
-		add(dayLabel);
+		
+		
+		//JLabels for Directions
+		directions[0].setLocation(new Point(0,50));
+		directions[1].setLocation(new Point(0,100));
+		
+		for (JLabel l : directions) {
+			l.setSize(new Dimension(1200,50));
+			l.setFont(new Font("Times New Roman",Font.PLAIN,24));
+			
+			l.setForeground(Color.WHITE);
+			
+			add(l);
+		}
+		
+		
+		//JLabels for Date
+		for (int i = 0; i < labels.length; i++) {
+			labels[i].setLocation(new Point(400,300+i*100));
+		}
+		for (JLabel l : labels) {
+			l.setSize(new Dimension(100,25));
+			l.setFont(new Font("Times New Roman",Font.PLAIN,24));
+			
+			l.setForeground(Color.WHITE);
+			
+			add(l);
+		}
+		
+		//JComboBoxes
+		for (int i = 0; i < dropdowns.length; i++) {
+			dropdowns[i].setLocation(new Point(600,300+i*100));
+		}
+		for (JComboBox b : dropdowns) {
+			b.addMouseListener(this);
+			
+			b.setSize(new Dimension(100,25));
+			b.setFont(new Font("Times New Roman",Font.PLAIN,24));
+		
+			b.setBackground(Color.WHITE);
+			b.setForeground(Color.BLACK);
+			b.setEditable(true); //optional
+			
+			add(b);
+		}
+		
+		
+		/*
 		//fill dayNums with string "1" to "31"
 		for(int i = 0; i<31; i++){
 			dayNums[i] = ""+(i+1);
@@ -357,7 +429,6 @@ class DatePanel extends JPanel implements MouseListener{
 		day.addMouseListener(this);
 		add(day);
 
-		add(monthLabel);
 		//fill monthNums with string "1" to "12"
 		for(int i = 0; i<12;i++){
 			monthNums[i] = ""+(i+1);
@@ -366,7 +437,6 @@ class DatePanel extends JPanel implements MouseListener{
 		month.addMouseListener(this);
 		add(month);
 
-		add(yearLabel);
 		//fill monthNums with string "2018" to "2050"
 		for(int i = 0; i<33; i++){
 			yearNums[i] = ""+(i+2018);
@@ -374,11 +444,14 @@ class DatePanel extends JPanel implements MouseListener{
 		year = new JComboBox(yearNums);
 		year.addMouseListener(this);
 		add(year);
+		*/
+		
+		
 	}
 
 	//checks if all boxes have been filled in
 	public boolean canConfirm(){
-		if(day.getItemCount()!=0 && month.getItemCount()!=0 && year.getItemCount()!=0){
+		if(dropdowns[0].getItemCount()!=0 && dropdowns[1].getItemCount()!=0 && dropdowns[2].getItemCount()!=0){
 			return true;
 		}
 		return false;
@@ -388,7 +461,7 @@ class DatePanel extends JPanel implements MouseListener{
 	//stores dates in form "day month year"
 	//e.g. 17 10 2018
 	public void writeToFile(){
-		String txtFileInfo = day.getSelectedItem()+" "+month.getSelectedItem()+" "+year.getSelectedItem(); //the string that will be written into the txt file
+		String txtFileInfo = dropdowns[0].getSelectedItem()+" "+dropdowns[1].getSelectedItem()+" "+dropdowns[2].getSelectedItem(); //the string that will be written into the txt file
 
 		try {
 			BufferedWriter writer = new BufferedWriter(new FileWriter("Weeks.txt",true));
@@ -412,9 +485,23 @@ class DatePanel extends JPanel implements MouseListener{
 	}
 	@Override
 	public void mouseEntered(MouseEvent e) {
+		Object source = e.getSource();
+		if (source == buttons[0]) {
+			buttons[0].setForeground(Color.BLACK);
+		}
+		else if (source == buttons[1]) {
+			buttons[1].setForeground(Color.BLACK);
+		}
 	}
 	@Override
 	public void mouseExited(MouseEvent e) {
+		Object source = e.getSource();
+		if (source == buttons[0]) {
+			buttons[0].setForeground(Color.WHITE);
+		}
+		else if (source == buttons[1]) {
+			buttons[1].setForeground(Color.WHITE);
+		}
 	}
 }
 
