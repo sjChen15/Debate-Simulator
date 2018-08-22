@@ -11,6 +11,7 @@ import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.io.*;
+import java.util.ArrayList;
 
 import javax.imageio.ImageIO;
 import javax.swing.JButton;
@@ -30,7 +31,7 @@ public class Main extends JFrame implements ActionListener{
 
 	//JButtons
 	private JButton[][] buttons = {{new JButton("Start"),new JButton("Members")},{new JButton("Add Ballot"), new JButton("Shake Tin"), new JButton("Menu")},
-			{new JButton("Skip"),new JButton("Confirm")},
+			{new JButton("Confirm"),new JButton("Skip")},
 			{new JButton("Add Member"),new JButton("Menu")},{new JButton("Confirm"), new JButton("Back")},
 			{new JButton("Confirm"), new JButton("Back")},{new JButton("Next")},
 			{new JButton("Menu")}};
@@ -112,8 +113,11 @@ public class Main extends JFrame implements ActionListener{
 		}
 		//AddBallotPanel
 		else if (source == buttons[4][0]) { //Confirm button
-			cLayout.show(cards, "start");
-			((AddBallotPanel)panels[4]).confirmNames();
+			if(((AddBallotPanel)panels[4]).canConfirm()){
+				((AddBallotPanel)panels[4]).confirmNames();
+				((StartPanel)panels[1]).addToTin(((AddBallotPanel)panels[4]).getBallot());
+				cLayout.show(cards, "start");
+			}
 		}
 		else if (source == buttons[4][1]) { //Back button
 			cLayout.show(cards, "start");
@@ -146,10 +150,8 @@ public class Main extends JFrame implements ActionListener{
 
 class MenuPanel extends JPanel implements MouseListener{
 
+	//private Font font;
 	private Image podium;
-	private Image logo;
-	private Color underline1 = Color.WHITE;
-	private Color underline2 = Color.WHITE;
 	private JLabel[] labels = {new JLabel("Vincent Massey Secondary School",SwingConstants.CENTER),new JLabel("Debate Club",SwingConstants.CENTER)};
 	private JButton[] buttons = {new JButton("Start"),new JButton("Members")}; //initially avoid null pointer
 	
@@ -161,8 +163,8 @@ class MenuPanel extends JPanel implements MouseListener{
 		setLayout(null);
 		//load files
 		try {
+			//font = Font.createFont(Font.TRUETYPE_FONT, new File("MenuFiles/Roboto-Regular.ttf")).deriveFont(Font.PLAIN, 100);
 			podium = ImageIO.read(new File("MenuFiles/podium.png")).getScaledInstance(1200,400,Image.SCALE_DEFAULT); 
-			logo = ImageIO.read(new File("MenuFiles/DebateLogo.png")).getScaledInstance(500, 500, Image.SCALE_SMOOTH);
 		} catch (IOException e) {	e.printStackTrace();}
 		
 		//background
@@ -174,7 +176,6 @@ class MenuPanel extends JPanel implements MouseListener{
 			l.setForeground(Color.WHITE);
 		}
 		//Vincent Massey Secondary School
-		labels[0].setForeground(new Color(163,99,43)); //podium's brown
 		labels[0].setFont(new Font("Times New Roman", Font.PLAIN, 30));
 		labels[0].setSize(new Dimension(1200,40));
 		labels[0].setLocation(new Point(0,70));
@@ -208,14 +209,7 @@ class MenuPanel extends JPanel implements MouseListener{
 	//graphics
 	public void paintComponent(Graphics g) {
 		super.paintComponent(g);
-		g.drawImage(logo,350, 0, null);
 		g.drawImage(podium,0,400,null);
-		
-		//button underlines
-		g.setColor(underline1);
-		g.fillRect(100, 480, 200, 3); //Start Button
-		g.setColor(underline2);
-		g.fillRect(900, 480, 200, 3); //Members Button
 	}
 
 	//mouse listener methods
@@ -227,12 +221,10 @@ class MenuPanel extends JPanel implements MouseListener{
 		Object source = e.getSource();
 		//Formatting
 		if (source == buttons[0]) {
-			buttons[0].setForeground(new Color(163,99,43)); //podium's brown
-			underline1 = new Color(163,99,43);
+			buttons[0].setForeground(Color.BLACK);
 		}
 		else if (source == buttons[1]) {
-			buttons[1].setForeground(new Color(163,99,43)); //podium's brown
-			underline2 = new Color(163,99,43);
+			buttons[1].setForeground(Color.BLACK);
 		}
 	}
 	@Override
@@ -241,11 +233,9 @@ class MenuPanel extends JPanel implements MouseListener{
 		//Formatting
 		if (source == buttons[0]) {
 			buttons[0].setForeground(Color.WHITE);
-			underline1 = Color.WHITE;
 		}
 		else if (source == buttons[1]) {
 			buttons[1].setForeground(Color.WHITE);
-			underline2 = Color.WHITE;
 		}
 	}
 	@Override
@@ -261,6 +251,7 @@ class StartPanel extends JPanel implements MouseListener{
 	private BTree memberTree;
 	private int numOfMembers; //the number of members in the tree
 	private boolean needNewTree = true; //is true if user has just start program or has went back to menu from the start page
+	private ArrayList<Ballot> tin = new ArrayList<Ballot>(); //to store the ballots
 
 	private JButton[] buttons;
 
@@ -299,6 +290,10 @@ class StartPanel extends JPanel implements MouseListener{
         System.out.println(memberTree.display(1));
     }
 
+    public void addToTin(Ballot b){
+		tin.add(b);
+	}
+
     public BTree getMemberTree(){
 	    return memberTree;
     }
@@ -320,107 +315,59 @@ class StartPanel extends JPanel implements MouseListener{
 }
 
 class DatePanel extends JPanel implements MouseListener{
-	
-	private JButton[] buttons = {new JButton("Skip"),new JButton("Confirm")}; //initially avoid null pointer
-	private JLabel[] directions = {new JLabel("Enter the date if it is an official debate meeting and if it has not been entered today.",SwingConstants.CENTER),
-			new JLabel("Matchmaking and member deletion are dependant on the accuracy of dates entered so please be careful.",SwingConstants.CENTER)};
-	private JLabel[] labels = {new JLabel("Day"), new JLabel("Month"), new JLabel("Year")};
+	private JButton[] buttons;
+	private JLabel directions1 = new JLabel("Enter the date if it is an official debate meeting or if it has not been entered in another run.");
+	private JLabel directions2 = new JLabel("Things like matchmaking and member deletion is dependant on the number of dates entered so please be careful.");
+	private JLabel dayLabel = new JLabel("Day");
+	private JLabel monthLabel = new JLabel("Month");
+	private JLabel yearLabel = new JLabel("Year");
 
-	//to select the date of the meeting
-	private String[][] ranges = {numberArrayString(1,31),numberArrayString(1,12),numberArrayString(2018,2050)};
-	private JComboBox[] dropdowns = {new JComboBox(ranges[0]),new JComboBox(ranges[1]),new JComboBox(ranges[2])};
-	
-	//method creates string array given first and last integer by an increment of 1 
-	public String[] numberArrayString(int firstInclusive, int secondInclusive) {
-		String[] stringArray = new String[secondInclusive - firstInclusive +1];
-		int counter = 0; //to iterate through array
-		for (int i = firstInclusive; i <= secondInclusive; i++) {
-			stringArray[counter] = Integer.toString(i);
-			counter++;
-		}
-		return stringArray;
-	}
-	
-	//Constructor
+	private JComboBox day,month,year;	//to select the date of the meeting
+	private String[] dayNums = new String[31]; //the string arrays with their respective JComboBoxes
+	private String[] monthNums = new String[12];
+	private String[] yearNums = new String[33];
+
 	public DatePanel(JButton[] buttons){
-		
-		//Formatting
-		setLayout(null);
-		
 		//JButtons
 		this.buttons = buttons;
-		//Skip
-		buttons[0].setLocation(new Point(50,650));
-		buttons[0].setHorizontalAlignment(SwingConstants.LEFT);
-		//Confirm
-		buttons[1].setLocation(new Point(850,650));	
-		buttons[1].setHorizontalAlignment(SwingConstants.RIGHT);
-		//background
-		setBackground(new Color(128,0,0)); //marroon
-		for (JButton b  : buttons) {
-			b.addMouseListener(this);
-			b.setSize(new Dimension(300,100));
-			b.setFont(new Font("Times New Roman", Font.BOLD, 48));
-			
-			b.setBackground(new Color(0,0,0,0));
-			b.setForeground(Color.WHITE);
-			b.setBorderPainted(false);
-			b.setContentAreaFilled(false);
-			b.setFocusPainted(false);
-			
+		for (JButton b : buttons) {
 			add(b);
 		}
-		
-		
-		//JLabels for Directions
-		directions[0].setLocation(new Point(0,50));
-		directions[1].setLocation(new Point(0,100));
-		
-		for (JLabel l : directions) {
-			l.setSize(new Dimension(1200,50));
-			l.setFont(new Font("Times New Roman",Font.PLAIN,24));
-			
-			l.setForeground(Color.WHITE);
-			
-			add(l);
+		//add the JLabels
+		add(directions1);
+		add(directions2);
+
+		add(dayLabel);
+		//fill dayNums with string "1" to "31"
+		for(int i = 0; i<31; i++){
+			dayNums[i] = ""+(i+1);
 		}
-		
-		
-		//JLabels for Date
-		for (int i = 0; i < labels.length; i++) {
-			labels[i].setLocation(new Point(400,300+i*100));
+		day = new JComboBox(dayNums);
+		day.addMouseListener(this);
+		add(day);
+
+		add(monthLabel);
+		//fill monthNums with string "1" to "12"
+		for(int i = 0; i<12;i++){
+			monthNums[i] = ""+(i+1);
 		}
-		for (JLabel l : labels) {
-			l.setSize(new Dimension(100,25));
-			l.setFont(new Font("Times New Roman",Font.PLAIN,24));
-			
-			l.setForeground(Color.WHITE);
-			
-			add(l);
+		month = new JComboBox(monthNums);
+		month.addMouseListener(this);
+		add(month);
+
+		add(yearLabel);
+		//fill monthNums with string "2018" to "2050"
+		for(int i = 0; i<33; i++){
+			yearNums[i] = ""+(i+2018);
 		}
-		
-		//JComboBoxes
-		for (int i = 0; i < dropdowns.length; i++) {
-			dropdowns[i].setLocation(new Point(600,300+i*100));
-		}
-		for (JComboBox b : dropdowns) {
-			b.addMouseListener(this);
-			
-			b.setSize(new Dimension(100,25));
-			b.setFont(new Font("Times New Roman",Font.PLAIN,24));
-		
-			b.setBackground(Color.WHITE);
-			b.setForeground(Color.BLACK);
-			b.setEditable(true); //optional
-			
-			add(b);
-		}
-		
+		year = new JComboBox(yearNums);
+		year.addMouseListener(this);
+		add(year);
 	}
 
 	//checks if all boxes have been filled in
 	public boolean canConfirm(){
-		if(dropdowns[0].getItemCount()!=0 && dropdowns[1].getItemCount()!=0 && dropdowns[2].getItemCount()!=0){
+		if(day.getItemCount()!=0 && month.getItemCount()!=0 && year.getItemCount()!=0){
 			return true;
 		}
 		return false;
@@ -430,7 +377,7 @@ class DatePanel extends JPanel implements MouseListener{
 	//stores dates in form "day month year"
 	//e.g. 17 10 2018
 	public void writeToFile(){
-		String txtFileInfo = dropdowns[0].getSelectedItem()+" "+dropdowns[1].getSelectedItem()+" "+dropdowns[2].getSelectedItem(); //the string that will be written into the txt file
+		String txtFileInfo = day.getSelectedItem()+" "+month.getSelectedItem()+" "+year.getSelectedItem(); //the string that will be written into the txt file
 
 		try {
 			BufferedWriter writer = new BufferedWriter(new FileWriter("Weeks.txt",true));
@@ -454,23 +401,9 @@ class DatePanel extends JPanel implements MouseListener{
 	}
 	@Override
 	public void mouseEntered(MouseEvent e) {
-		Object source = e.getSource();
-		if (source == buttons[0]) {
-			buttons[0].setForeground(Color.BLACK);
-		}
-		else if (source == buttons[1]) {
-			buttons[1].setForeground(Color.BLACK);
-		}
 	}
 	@Override
 	public void mouseExited(MouseEvent e) {
-		Object source = e.getSource();
-		if (source == buttons[0]) {
-			buttons[0].setForeground(Color.WHITE);
-		}
-		else if (source == buttons[1]) {
-			buttons[1].setForeground(Color.WHITE);
-		}
 	}
 }
 
@@ -481,6 +414,7 @@ class AddBallotPanel extends JPanel implements MouseListener{
 	private JComboBox member2;
 	private String[] sample_names = {"Rahma","Jenny","Adam","Vinh","Albert","Zak","Poonam","Georgia"}; //replace with list of member names
     private String[] allMembers;
+    private Ballot b;
 
     private String member1Name,member2Name;
 
@@ -511,8 +445,8 @@ class AddBallotPanel extends JPanel implements MouseListener{
 		member1.setEditable(true);
 		// get the combo box' editor component
 		JTextComponent editor1 = (JTextComponent) member1.getEditor().getEditorComponent();
-		// change the editor's document to our BadDocument
-		editor1.setDocument(new S01BadDocument(member1));
+		// change the editor's document to our editor
+		editor1.setDocument(new JComboBoxEditor(member1));
 		member1.addMouseListener(this);
 		add(member1);
 
@@ -520,8 +454,8 @@ class AddBallotPanel extends JPanel implements MouseListener{
 		member2.setEditable(true);
 		// get the combo box' editor component
 		JTextComponent editor2 = (JTextComponent) member2.getEditor().getEditorComponent();
-		// change the editor's document to our BadDocument
-		editor2.setDocument(new S01BadDocument(member2));
+		// change the editor's document to our editor
+		editor2.setDocument(new JComboBoxEditor(member2));
 		member2.addMouseListener(this);
 		add(member2);
     }
@@ -529,10 +463,20 @@ class AddBallotPanel extends JPanel implements MouseListener{
     public void confirmNames(){
 		member1Name = member1.getSelectedItem().toString();
 		member2Name = member2.getSelectedItem().toString();
-		Ballot b = new Ballot(memberTree.findName(member1Name).getMember(),memberTree.findName(member2Name).getMember());
+		b = new Ballot(memberTree.findName(member1Name).getMember(),memberTree.findName(member2Name).getMember());
 		//TODO: now store them in a tin or something...
 	}
 
+	public boolean canConfirm(){
+		if(member1.getItemCount()!=0 && member2.getItemCount()!=0){
+			return true;
+		}
+		return false;
+	}
+
+	public Ballot getBallot(){
+		return b;
+	}
 
 	@Override
 	public void mouseClicked(MouseEvent e) {
