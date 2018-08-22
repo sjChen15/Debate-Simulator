@@ -11,6 +11,7 @@ import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.io.*;
+import java.util.ArrayList;
 
 import javax.imageio.ImageIO;
 import javax.swing.JButton;
@@ -112,9 +113,14 @@ public class Main extends JFrame implements ActionListener{
 		}
 		//AddBallotPanel
 		else if (source == buttons[4][0]) { //Confirm button
-			cLayout.show(cards, "start");
-			((AddBallotPanel)panels[4]).confirmNames();
-		}
+			cLayout.show(cards, "start");				
+			if(((AddBallotPanel)panels[4]).canConfirm()){
+				((AddBallotPanel)panels[4]).confirmNames();					
+				((AddBallotPanel)panels[4]).confirmNames();
+				((StartPanel)panels[1]).addToTin(((AddBallotPanel)panels[4]).getBallot());
+				cLayout.show(cards, "start");
+			}
+		}			
 		else if (source == buttons[4][1]) { //Back button
 			cLayout.show(cards, "start");
 		}
@@ -262,6 +268,8 @@ class StartPanel extends JPanel implements MouseListener{
 	private int numOfMembers; //the number of members in the tree
 	private boolean needNewTree = true; //is true if user has just start program or has went back to menu from the start page
 
+	private ArrayList<Ballot> tin = new ArrayList<Ballot>(); //to store ballots
+	
 	private JButton[] buttons;
 
 	public StartPanel(JButton[] buttons) {
@@ -274,6 +282,10 @@ class StartPanel extends JPanel implements MouseListener{
 
 	}
 
+	public void addToTin(Ballot b) {
+		tin.add(b);
+	}
+	
     public void makeMemberTree(){
         if(needNewTree){
             memberTree = new BTree();
@@ -484,6 +496,8 @@ class AddBallotPanel extends JPanel implements MouseListener{
 
     private String member1Name,member2Name;
 
+    private Ballot b;
+    
     /*
 	private JLabel member1 = new JLabel("Member 1:");
 	private JLabel member2 = new JLabel("Member 2:");*/
@@ -495,8 +509,21 @@ class AddBallotPanel extends JPanel implements MouseListener{
 		for (JButton b : buttons) {
 			add(b);
 		}
-
-    }
+		
+	}
+	
+	//getter
+	public Ballot getBallot() {
+		return b;
+	}
+	
+	//methods
+	public boolean canConfirm() {
+		if (member1.getItemCount() != 0 && member2.getItemCount() != 0) {
+			return true;
+		}
+		return false;
+	}
 
     public void setMemberTree(BTree m){
         memberTree = m;
@@ -512,7 +539,7 @@ class AddBallotPanel extends JPanel implements MouseListener{
 		// get the combo box' editor component
 		JTextComponent editor1 = (JTextComponent) member1.getEditor().getEditorComponent();
 		// change the editor's document to our BadDocument
-		editor1.setDocument(new S01BadDocument(member1));
+		editor1.setDocument(new JComboBoxEditor(member1));
 		member1.addMouseListener(this);
 		add(member1);
 
@@ -521,7 +548,7 @@ class AddBallotPanel extends JPanel implements MouseListener{
 		// get the combo box' editor component
 		JTextComponent editor2 = (JTextComponent) member2.getEditor().getEditorComponent();
 		// change the editor's document to our BadDocument
-		editor2.setDocument(new S01BadDocument(member2));
+		editor2.setDocument(new JComboBoxEditor(member2));
 		member2.addMouseListener(this);
 		add(member2);
     }
