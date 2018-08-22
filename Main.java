@@ -326,11 +326,9 @@ class DatePanel extends JPanel implements MouseListener{
 			new JLabel("Matchmaking and member deletion are dependant on the accuracy of dates entered so please be careful.",SwingConstants.CENTER)};
 	private JLabel[] labels = {new JLabel("Day"), new JLabel("Month"), new JLabel("Year")};
 
-	//private JComboBox day,month,year;	//to select the date of the meeting
-	private String[] dayNums = numberArrayString(1,31); //the string arrays with their respective JComboBoxes
-	private String[] monthNums =  numberArrayString(1,12);
-	private String[] yearNums =  numberArrayString(2018,2050);
-	private JComboBox[] dropdowns = {new JComboBox(dayNums),new JComboBox(monthNums),new JComboBox(yearNums)};
+	//to select the date of the meeting
+	private String[][] ranges = {numberArrayString(1,31),numberArrayString(1,12),numberArrayString(2018,2050)};
+	private JComboBox[] dropdowns = {new JComboBox(ranges[0]),new JComboBox(ranges[1]),new JComboBox(ranges[2])};
 	
 	//method creates string array given first and last integer by an increment of 1 
 	public String[] numberArrayString(int firstInclusive, int secondInclusive) {
@@ -347,7 +345,6 @@ class DatePanel extends JPanel implements MouseListener{
 	public DatePanel(JButton[] buttons){
 		
 		//Formatting
-		
 		setLayout(null);
 		
 		//JButtons
@@ -418,34 +415,6 @@ class DatePanel extends JPanel implements MouseListener{
 			
 			add(b);
 		}
-		
-		
-		/*
-		//fill dayNums with string "1" to "31"
-		for(int i = 0; i<31; i++){
-			dayNums[i] = ""+(i+1);
-		}
-		day = new JComboBox(dayNums);
-		day.addMouseListener(this);
-		add(day);
-
-		//fill monthNums with string "1" to "12"
-		for(int i = 0; i<12;i++){
-			monthNums[i] = ""+(i+1);
-		}
-		month = new JComboBox(monthNums);
-		month.addMouseListener(this);
-		add(month);
-
-		//fill monthNums with string "2018" to "2050"
-		for(int i = 0; i<33; i++){
-			yearNums[i] = ""+(i+2018);
-		}
-		year = new JComboBox(yearNums);
-		year.addMouseListener(this);
-		add(year);
-		*/
-		
 		
 	}
 
